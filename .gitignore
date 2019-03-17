@@ -1,0 +1,8 @@
+tags
+out/*
+lib/*
+cmake*
+bin/*
+**/CMakeF*
+**/Makefile
+**/CMakeCache*
