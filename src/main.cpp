@@ -11,6 +11,7 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    solver.solve();
-    solver.print_solution(cout);
+    if (solver.solve()) {
+        solver.print_solution(cout);
+    }
 }

@@ -3,8 +3,8 @@
 
 #include <istream>
 #include <ostream>
-#include <string>
 #include <iomanip>
+#include <string>
 
 using namespace std;
 using namespace Sokoban;
@@ -38,11 +38,15 @@ void Solver::print_solution(std::ostream & stream) const {
 
     auto path = tgraph.get_path();
     if (path.has_value()) {
-        for (auto [i1, i2, pd]: path.value()) {
-            char chD = to_char(pd);
-            cout << i1 << ':' << chD << " ";
+        for (size_t i = 0; i < path.value().size() - 1; ++i) {
+        /* for (auto [i1, i2, pd]: path.value()) { */
+            auto [i1, i2, pd] = path.value()[i];
+            const char chD = to_char(pd);
+            stream << i1 << ':' << chD << ' ';
         }
-        stream << endl;
+        auto [i1, i2, pd] = path.value().back();
+        const char chD = to_char(pd);
+        stream << i1 << ':' << chD << endl;
     }
 }
 
