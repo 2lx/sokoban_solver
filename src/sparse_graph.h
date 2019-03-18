@@ -9,15 +9,14 @@
 #include <queue>
 #include <vector>
 
-template <typename Node, size_t ADJ_MAX, bool directed = false>
+template <typename Node, size_t ADJ_MAX, bool Directed = false>
 class SparseGraph {
-public:
-    static constexpr Node EMPTY = std::numeric_limits<Node>::max();
-
 private:
     std::vector<std::array<Node, ADJ_MAX>> edges;
 
 public:
+    static constexpr Node EMPTY = std::numeric_limits<Node>::max();
+
     SparseGraph() : edges{} {
         edges.reserve(500);
     }
@@ -48,7 +47,7 @@ public:
             if (e == EMPTY) { e = ind2; break; }
         }
 
-        if constexpr (!directed) {
+        if constexpr (!Directed) {
             for (auto & e: edges[ind2]) {
                 if (e == ind1)  { break; }
                 if (e == EMPTY) { e = ind1; break; }
@@ -82,6 +81,23 @@ public:
         }
         return cmin;
     }
+
+    std::vector<Node> get_joined(Node start) const {
+        std::vector<Node> result;
+        std::queue<Node> q;
+        std::vector<bool> visited(edges.size(), false);
+
+        q.push(start);
+        result.push_back(start);
+        visited[start] = true;
+
+        while (!q.empty()) {
+            result.push_back(q.front());
+            recursive_DFS(q, visited);
+        }
+        return result;
+    }
+
 
     bool is_joined(Node start, Node finish) const {
         std::queue<Node> q;
@@ -135,15 +151,8 @@ public:
         edges = tedges;
     }
 
-    std::vector<Node> siblings(size_t index) const {
-        std::vector<Node> result;
-
-        for (auto ind: edges[index]) {
-            if (ind == EMPTY) { continue; }
-            result.push_back(ind);
-        }
-
-        return result;
+    const std::array<Node, ADJ_MAX> & siblings(size_t index) const {
+        return edges[index];
     }
 
     void print() const {

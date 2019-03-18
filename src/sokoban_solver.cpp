@@ -2,8 +2,7 @@
 #include "sokoban_formatter.h"
 
 #include "sokoban_pushinfo.h"
-#include "join.h"
-#include "replace_sorted.h"
+#include "string_join.h"
 
 #include <iterator>
 #include <istream>
@@ -37,7 +36,7 @@ bool Solver::read_level_data(std::istream & stream) {
 
 void Solver::print_solution(std::ostream & stream) const {
     /* board.print_graphs(); */
-    /* tgraph.print(); */
+    tgraph.print(stream);
     /* ttable.print(); */
 
     auto path = tgraph.get_path();
@@ -47,14 +46,14 @@ void Solver::print_solution(std::ostream & stream) const {
 }
 
 bool Solver::solve() {
+    BoxState::set_box_count(board.box_count());
+
     queue<pair<stateid_t, BoxState>> q;
     auto base_state = board.current_state();
     auto [inserted, base_state_id] = ttable.insert_state(base_state);
     q.push({base_state_id, base_state});
 
-    bool solution_found = false;
-
-    while (!q.empty() && !solution_found) {
+    while (!q.empty()) {
         auto [state_id, state] = q.front();
         q.pop();
 
@@ -68,13 +67,13 @@ bool Solver::solve() {
             auto [inserted, new_state_id] = ttable.insert_state(new_state);
 
             if (inserted) {
+                tgraph.insert_state(state_id, new_state_id, p);
+                /* if (board.has_deadlock(p.to())) { continue; } */
                 q.push({new_state_id, new_state});
-                solution_found = board.is_complete();
-                tgraph.insert_state(state_id, new_state_id, p, solution_found);
-                if (solution_found) { break; }
+                if (board.is_complete()) { return true; }
             };
         }
     }
-    return solution_found;
+    return false;
 }
 

@@ -21,6 +21,7 @@ public:
         for (auto & bp: box_positions) { bp = 0; }
     }
 
+    static void set_box_count(size_t bcount) { box_count = bcount; }
     boxhash_t hash() const;
 };
 

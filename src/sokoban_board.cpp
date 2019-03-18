@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include "replace_sorted.h"
+#include "string_join.h"
 
 using namespace Sokoban;
 using namespace std;
@@ -87,6 +88,8 @@ void Board::update_boxdep_moves() {
     for (const auto b: _boxes) {
         _boxdep_moves.remove_vertice_edges(b);
     }
+    _cur_moves = move(_boxdep_moves.get_joined(_player));
+    sort(begin(_cur_moves), end(_cur_moves));
 }
 
 void Board::set_boxstate_and_push(const BoxState & bs, PushInfo pt) {
@@ -106,11 +109,148 @@ bool Board::is_complete() const {
     return _boxes == _goals;
 }
 
+bool Board::has_deadlock(index_t ind) const {
+    auto fn_has_box = [=](size_t ind) {
+        return binary_search(begin(_boxes), end(_boxes), ind);
+    };
+    const bool has_box_u    = fn_has_box(ind - _width);
+    const bool has_box_l  = fn_has_box(ind - 1);
+    const bool has_box_r = fn_has_box(ind + 1);
+    const bool has_box_d  = fn_has_box(ind + _width);
+
+    const bool has_box_ul = fn_has_box(ind - _width - 1);
+    const bool has_box_ur = fn_has_box(ind - _width + 1);
+    const bool has_box_dl = fn_has_box(ind + _width - 1);
+    const bool has_box_dr = fn_has_box(ind + _width + 1);
+
+    const bool not_goal_u = !binary_search(begin(_goals), end(_goals), ind - _width);
+    const bool not_goal_l = !binary_search(begin(_goals), end(_goals), ind - 1);
+    const bool not_goal_r = !binary_search(begin(_goals), end(_goals), ind + 1);
+    const bool not_goal_d = !binary_search(begin(_goals), end(_goals), ind + _width);
+
+    const bool not_goal_ul = !binary_search(begin(_goals), end(_goals), ind - _width - 1);
+    const bool not_goal_ur = !binary_search(begin(_goals), end(_goals), ind - _width + 1);
+    const bool not_goal_dl = !binary_search(begin(_goals), end(_goals), ind + _width - 1);
+    const bool not_goal_dr = !binary_search(begin(_goals), end(_goals), ind + _width + 1);
+
+    const bool wall_lu = _tiles[ind - _width - 1] == Tile::Wall;
+    const bool wall_u  = _tiles[ind - _width]     == Tile::Wall;
+    const bool wall_ru = _tiles[ind - _width + 1] == Tile::Wall;
+    const bool wall_l  = _tiles[ind          - 1] == Tile::Wall;
+    const bool wall_r  = _tiles[ind          + 1] == Tile::Wall;
+    const bool wall_ld = _tiles[ind + _width - 1] == Tile::Wall;
+    const bool wall_d  = _tiles[ind + _width]     == Tile::Wall;
+    const bool wall_rd = _tiles[ind + _width + 1] == Tile::Wall;
+
+    const bool not_goal_dest = !binary_search(begin(_goals), end(_goals), ind);
+
+    const bool check_up    = has_box_u && (not_goal_dest || !not_goal_u);
+    const bool check_left  = has_box_l && (not_goal_dest || !not_goal_l);
+    const bool check_right = has_box_r && (not_goal_dest || !not_goal_r);
+    const bool check_down  = has_box_d && (not_goal_dest || !not_goal_d);
+
+    if (
+           ( has_box_u  && has_box_ul &&  has_box_l &&
+           (not_goal_u || not_goal_ul || not_goal_l || not_goal_dest)) ||
+           ( has_box_u &&  has_box_ur &&  has_box_r &&
+           (not_goal_u || not_goal_ur || not_goal_r || not_goal_dest)) ||
+           ( has_box_d &&  has_box_dl &&  has_box_l &&
+           (not_goal_d || not_goal_dl || not_goal_l || not_goal_dest)) ||
+           ( has_box_d &&  has_box_dr &&  has_box_r &&
+           (not_goal_d || not_goal_dr || not_goal_r || not_goal_dest))
+            ) {
+        return true;
+    }
+
+    if (   (check_up    && wall_lu && wall_l)
+        || (check_up    && wall_ru && wall_r)
+        || (check_left  && wall_lu && wall_u)
+        || (check_left  && wall_ld && wall_d)
+        || (check_right && wall_ru && wall_u)
+        || (check_right && wall_rd && wall_d)
+        || (check_down  && wall_ld && wall_l)
+        || (check_down  && wall_rd && wall_r)) {
+        return true;
+    }
+    return false;
+}
+
+
+bool Board::has_deadlock(const PushInfo & pi) const {
+    index_t ibox      = pi.from();
+    index_t ibox_dest = pi.to();
+
+    auto fn_has_box = [=](size_t ind) {
+        return (ibox != ind) && binary_search(begin(_boxes), end(_boxes), ind);
+    };
+    const bool has_box_u  = fn_has_box(ibox_dest - _width);
+    const bool has_box_l  = fn_has_box(ibox_dest - 1);
+    const bool has_box_r  = fn_has_box(ibox_dest + 1);
+    const bool has_box_d  = fn_has_box(ibox_dest + _width);
+
+    const bool has_box_ul = fn_has_box(ibox_dest - _width - 1);
+    const bool has_box_ur = fn_has_box(ibox_dest - _width + 1);
+    const bool has_box_dl = fn_has_box(ibox_dest + _width - 1);
+    const bool has_box_dr = fn_has_box(ibox_dest + _width + 1);
+
+    const bool not_goal_u  = !binary_search(begin(_goals), end(_goals), ibox_dest - _width);
+    const bool not_goal_l  = !binary_search(begin(_goals), end(_goals), ibox_dest - 1);
+    const bool not_goal_r  = !binary_search(begin(_goals), end(_goals), ibox_dest + 1);
+    const bool not_goal_d  = !binary_search(begin(_goals), end(_goals), ibox_dest + _width);
+
+    const bool not_goal_ul = !binary_search(begin(_goals), end(_goals), ibox_dest - _width - 1);
+    const bool not_goal_ur = !binary_search(begin(_goals), end(_goals), ibox_dest - _width + 1);
+    const bool not_goal_dl = !binary_search(begin(_goals), end(_goals), ibox_dest + _width - 1);
+    const bool not_goal_dr = !binary_search(begin(_goals), end(_goals), ibox_dest + _width + 1);
+
+    const bool wall_lu = _tiles[ibox_dest - _width - 1] == Tile::Wall;
+    const bool wall_u  = _tiles[ibox_dest - _width]     == Tile::Wall;
+    const bool wall_ru = _tiles[ibox_dest - _width + 1] == Tile::Wall;
+    const bool wall_l  = _tiles[ibox_dest          - 1] == Tile::Wall;
+    const bool wall_r  = _tiles[ibox_dest          + 1] == Tile::Wall;
+    const bool wall_ld = _tiles[ibox_dest + _width - 1] == Tile::Wall;
+    const bool wall_d  = _tiles[ibox_dest + _width]     == Tile::Wall;
+    const bool wall_rd = _tiles[ibox_dest + _width + 1] == Tile::Wall;
+
+    const bool not_goal_dest = !binary_search(begin(_goals), end(_goals), ibox_dest);
+
+    const bool check_up    = has_box_u && (not_goal_dest || not_goal_u);
+    const bool check_left  = has_box_l && (not_goal_dest || not_goal_l);
+    const bool check_right = has_box_r && (not_goal_dest || not_goal_r);
+    const bool check_down  = has_box_d && (not_goal_dest || not_goal_d);
+
+    if (
+           ( has_box_u  && has_box_ul &&  has_box_l &&
+           (not_goal_u || not_goal_ul || not_goal_l || not_goal_dest)) ||
+           ( has_box_u &&  has_box_ur &&  has_box_r &&
+           (not_goal_u || not_goal_ur || not_goal_r || not_goal_dest)) ||
+           ( has_box_d &&  has_box_dl &&  has_box_l &&
+           (not_goal_d || not_goal_dl || not_goal_l || not_goal_dest)) ||
+           ( has_box_d &&  has_box_dr &&  has_box_r &&
+           (not_goal_d || not_goal_dr || not_goal_r || not_goal_dest))
+            ) {
+        return true;
+    }
+
+    if (   (check_up    && wall_lu && wall_l)
+        || (check_up    && wall_ru && wall_r)
+        || (check_left  && wall_lu && wall_u)
+        || (check_left  && wall_ld && wall_d)
+        || (check_right && wall_ru && wall_u)
+        || (check_right && wall_rd && wall_d)
+        || (check_down  && wall_ld && wall_l)
+        || (check_down  && wall_rd && wall_r)) {
+        return true;
+    }
+    return false;
+}
+
 vector<PushInfo> Board::possible_pushes() const {
     vector<PushInfo> result;
 
     for (const auto ibox: _boxes) {
         for (auto ibox_dest: _all_pushes.siblings(ibox)) {
+            if (ibox_dest == decltype(_all_pushes)::EMPTY) { continue; }
             index_t iplayer_dest;
 
             // we can omit the check of iplayer_dest correctness, because
@@ -124,7 +264,9 @@ vector<PushInfo> Board::possible_pushes() const {
             if (binary_search(begin(_boxes), end(_boxes), iplayer_dest)) { continue; }
 
             // check if player has access to the cell to push
-            if (!_boxdep_moves.is_joined(_player, iplayer_dest)) { continue; }
+            if (!binary_search(begin(_cur_moves), end(_cur_moves), iplayer_dest)) { continue; }
+
+            if (has_deadlock(PushInfo(ibox, ibox_dest))) { continue; }
 
             result.emplace_back(ibox, ibox_dest);
         }

@@ -5,8 +5,8 @@
 #include <random>
 #include <cassert>
 #include <limits>
-#include <iostream>
-#include <bitset>
+/* #include <iostream> */
+/* #include <bitset> */
 
 template <size_t SIZE, typename HASH_TYPE>
 class ZobristHash {
@@ -35,7 +35,7 @@ public:
 
     template <typename T = size_t, size_t ASize>
     HASH_TYPE hash(const std::array<T, ASize> & indexes,
-                            const size_t alength = ASize) const {
+                   const size_t alength = ASize) const {
         HASH_TYPE result{ 0u };
         for (size_t i = 0; i < alength; ++i) {
             /* assert(index < SIZE); */

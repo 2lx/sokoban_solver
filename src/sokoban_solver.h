@@ -11,10 +11,10 @@ namespace Sokoban
 
 class Solver {
 private:
-    /* Solver(const Solver &) = default; */
-    /* Solver(Solver &&) = delete; */
-    /* Solver & operator=(const Solver &) = delete; */
-    /* Solver & operator=(Solver &&) = default; */
+    Solver(const Solver &) = delete;
+    Solver(Solver &&) = delete;
+    Solver & operator=(const Solver &) = delete;
+    Solver & operator=(Solver &&) = delete;
 
     Board board;
     TranspositionTable ttable;

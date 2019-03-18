@@ -17,7 +17,7 @@ class TranspositionTable {
 public:
     TranspositionTable() : box_states{}, count{ 0u } {
         box_states.max_load_factor(10.);
-        box_states.reserve(19007);
+        box_states.reserve(80833);
     }
 
     std::pair<bool, unsigned> insert_state(BoxState newstate) {
@@ -29,14 +29,21 @@ public:
     }
 
     void print() const {
-        for (const auto bs: box_states) {
-            std::cout << "state " << bs.unique_index << ": "
-                      << "[player={" << bs.player_position << "}, boxes={";
-            for (const auto ind: bs.box_positions) {
-                std::cout << ind << ' ';
+        size_t max = 0;
+        for (size_t i = 0; i < box_states.bucket_count(); i++) {
+            if (box_states.bucket_size(i) > max) {
+                max = box_states.bucket_size(i);
             }
-            std::cout << "}]" << std::endl;
+            std::cout << box_states.bucket_size(i) << ' ';
         }
+        /* for (const auto bs: box_states) { */
+        /*     std::cout << "state " << bs.unique_index << ": " */
+        /*               << "[player={" << bs.player_position << "}, boxes={"; */
+        /*     for (const auto ind: bs.box_positions) { */
+        /*         std::cout << ind << ' '; */
+        /*     } */
+        /*     std::cout << "}]" << std::endl; */
+        /* } */
     }
 };
 
