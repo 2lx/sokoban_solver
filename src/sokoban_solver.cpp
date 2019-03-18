@@ -1,6 +1,11 @@
 #include "sokoban_solver.h"
 #include "sokoban_formatter.h"
 
+#include "sokoban_pushinfo.h"
+#include "join.h"
+#include "replace_sorted.h"
+
+#include <iterator>
 #include <istream>
 #include <ostream>
 #include <iomanip>
@@ -27,8 +32,7 @@ bool Solver::read_level_data(std::istream & stream) {
         height++;
     }
 
-    board.initialize(move(maze), width, height);
-    return true;
+    return board.initialize(move(maze), width, height);
 }
 
 void Solver::print_solution(std::ostream & stream) const {
@@ -38,20 +42,12 @@ void Solver::print_solution(std::ostream & stream) const {
 
     auto path = tgraph.get_path();
     if (path.has_value()) {
-        for (size_t i = 0; i < path.value().size() - 1; ++i) {
-        /* for (auto [i1, i2, pd]: path.value()) { */
-            auto [i1, i2, pd] = path.value()[i];
-            const char chD = to_char(pd);
-            stream << i1 << ':' << chD << ' ';
-        }
-        auto [i1, i2, pd] = path.value().back();
-        const char chD = to_char(pd);
-        stream << i1 << ':' << chD << endl;
+        stream << join(path.value(), " ") << endl;
     }
 }
 
 bool Solver::solve() {
-    queue<pair<unsigned, BoxState>> q;
+    queue<pair<stateid_t, BoxState>> q;
     auto base_state = board.current_state();
     auto [inserted, base_state_id] = ttable.insert_state(base_state);
     q.push({base_state_id, base_state});
@@ -66,11 +62,11 @@ bool Solver::solve() {
         auto pushes = board.possible_pushes();
 
         for (const auto p: pushes) {
-            board.set_boxstate(state);
-            board.push(p);
+            board.set_boxstate_and_push(state, p);
 
             auto new_state = board.current_state();
             auto [inserted, new_state_id] = ttable.insert_state(new_state);
+
             if (inserted) {
                 q.push({new_state_id, new_state});
                 solution_found = board.is_complete();

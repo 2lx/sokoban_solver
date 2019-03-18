@@ -13,7 +13,7 @@ public:
     static constexpr char alphabet[] = "_#@+$*. ";
 
 private:
-    static constexpr auto TILE_COUNT = static_cast<std::underlying_type_t<Tile>>(Tile::TileCount);
+    static constexpr auto TILE_COUNT = static_cast<std::underlying_type_t<Tile>>(Tile::Count);
     static_assert(sizeof(alphabet) == TILE_COUNT + 1);
 
 public:

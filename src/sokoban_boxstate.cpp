@@ -3,10 +3,10 @@
 using namespace Sokoban;
 
 size_t BoxState::box_count;
-const ZobristHash<MAX_TILE_COUNT> BoxState::zhash = {};
+const ZobristHash<MAX_TILE_COUNT, boxhash_t> BoxState::zhash = {};
 
-unsigned long long BoxState::hash() const {
-    auto result = zhash.hash<ushort>(box_positions, box_count);
+boxhash_t BoxState::hash() const {
+    auto result = zhash.hash<>(box_positions, box_count);
     result ^= zhash.hash(player_position);
 
     return result;

@@ -13,9 +13,7 @@ namespace Sokoban
 {
 
 class TranspositionGraph {
-    /* using NodeType = Node<unsigned short, PushType>; */
-    /* NodeType * root; */
-    using GValue = std::pair<unsigned, PushType>;
+    using GValue = std::pair<unsigned, PushInfo>;
     std::vector<std::vector<GValue>> graph;
     std::vector<bool> state_status;
 
@@ -25,7 +23,7 @@ public:
         state_status.reserve(15000);
     }
 
-    void insert_state(unsigned base_state_id, unsigned new_state_id, PushType pt, bool is_complete) {
+    void insert_state(unsigned base_state_id, unsigned new_state_id, PushInfo pt, bool is_complete) {
         if (graph.size() <= base_state_id) {
             graph.resize(base_state_id + 1);
         }
@@ -34,23 +32,24 @@ public:
         }
 
         state_status[new_state_id] = is_complete;
-        graph[base_state_id].push_back(make_pair(new_state_id, pt));
+        graph[base_state_id].emplace_back(new_state_id, pt);
     }
 
     size_t count() const {
         return graph.size();
     }
 
-    std::optional<std::vector<PushType>> get_path() const {
+    std::optional<std::vector<PushInfo>> get_path() const {
         std::vector<bool> visited(graph.size(), false);
-        std::vector<PushType> path;
+        std::vector<PushInfo> path;
 
-        return print_result_rec(visited, path, 0, PushType(), static_cast<unsigned>(graph.size() - 1));
+        return print_result_rec(visited, path, 0, PushInfo(0, 0),
+                static_cast<stateid_t>(graph.size() - 1));
     }
 
-    std::optional<std::vector<PushType>>
-    print_result_rec(std::vector<bool> & visited, std::vector<PushType> & path,
-                     unsigned index, PushType pt, unsigned dest) const {
+    std::optional<std::vector<PushInfo>>
+    print_result_rec(std::vector<bool> & visited, std::vector<PushInfo> & path,
+                     unsigned index, PushInfo pt, unsigned dest) const {
         visited[index] = true;
         if (index != 0) { path.push_back(pt); }
 
@@ -78,9 +77,8 @@ public:
 
             for (const auto [ind, pt]: graph[i]) {
                 std::cout << "    -> st." << std::setw(3) << ind;
-                const auto [i1, i2, d] = pt;
-                std::cout << "; ind." << std::setw(3) << i1
-                          << " -> ind." << std::setw(3) << i2 << ";\n";
+                std::cout << "; ind." << std::setw(3) << pt.from()
+                          << " -> ind." << std::setw(3) << pt.to() << ";\n";
             }
             /* std::cout << std::endl; */
         }

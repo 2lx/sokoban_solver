@@ -4,12 +4,14 @@
 #include <array>
 #include <random>
 #include <cassert>
-/* #include <iostream> */
-/* #include <bitset> */
+#include <limits>
+#include <iostream>
+#include <bitset>
 
-template <size_t SIZE>
+template <size_t SIZE, typename HASH_TYPE>
 class ZobristHash {
-    std::array<unsigned long long, SIZE> random_bits = { 0 };
+    std::array<HASH_TYPE, SIZE> random_bits = { 0 };
+    static constexpr size_t BIT_COUNT = std::numeric_limits<HASH_TYPE>::digits;
 
 public:
     ZobristHash() {
@@ -18,23 +20,23 @@ public:
         std::bernoulli_distribution distr(0.5);
 
         for (auto & rb: random_bits) {
-            for (uint i = 0; i < SIZE; i++) {
-                rb |= distr(gen) << i;
+            for (size_t i = 0; i < BIT_COUNT; i++) {
+                rb |= static_cast<HASH_TYPE>(distr(gen)) << i;
             }
-            /* std::cout << std::bitset<SIZE>{rb} << std::endl; */
+            /* std::cout << std::bitset<BIT_COUNT>{rb} << std::endl; */
         }
     }
 
     template <typename T = size_t>
-    unsigned long long hash(const T index) const {
+    HASH_TYPE hash(T index) const {
         /* assert(index < SIZE); */
         return random_bits[index];
     }
 
     template <typename T = size_t, size_t ASize>
-    unsigned long long hash(const std::array<T, ASize> & indexes,
+    HASH_TYPE hash(const std::array<T, ASize> & indexes,
                             const size_t alength = ASize) const {
-        auto result = 0ull;
+        HASH_TYPE result{ 0u };
         for (size_t i = 0; i < alength; ++i) {
             /* assert(index < SIZE); */
             result ^= random_bits[static_cast<size_t>(indexes[i])];
