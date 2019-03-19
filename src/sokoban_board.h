@@ -20,7 +20,6 @@ class Board {
     SparseGraph<index_t, DIR_COUNT, false> _all_moves;
     SparseGraph<index_t, DIR_COUNT, true>  _all_pushes;
     SparseGraph<index_t, DIR_COUNT, false>  _boxdep_moves;
-    std::vector<index_t>  _cur_moves;
 
     void update_boxdep_moves();
 public:

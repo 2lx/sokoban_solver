@@ -64,3 +64,21 @@ BOOST_AUTO_TEST_CASE(JuniorLevel03)
     test(indata, {outdata});
 }
 
+BOOST_AUTO_TEST_CASE(JuniorLevel01)
+{
+    const char * indata = 1 + R"(
+#######
+#.   .#
+#  $  #
+# $@$ #
+#  $  #
+#.   .#
+#######
+)";
+    const char * outdata = 1 + R"(
+17:U 10:L 9:L 23:L 22:D 25:U 18:U 11:R 29:D 31:R 32:R 33:D
+)";
+    test(indata, {outdata});
+}
+
+

@@ -8,3 +8,4 @@ bin/*
 **/CMakeCache*
 **/CTestTest*
 Testing/*
+out*

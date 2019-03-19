@@ -10,7 +10,11 @@ size_t BoxState::box_count;
 const ZobristHash<MAX_TILE_COUNT, boxhash_t> BoxState::zhash = {};
 
 boxhash_t BoxState::hash() const {
-    boxhash_t result = zhash.hash<>(box_positions, box_count);
+    assert(box_count > 0);
+
+    auto last = begin(box_positions);
+    advance(last, box_count);
+    boxhash_t result = zhash.hash<>(begin(box_positions), last);
     result ^= zhash.hash(player_position);
 
     /* cout << "BP: "; */

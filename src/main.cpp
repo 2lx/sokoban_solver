@@ -1,6 +1,5 @@
 #include <iostream>
 #include "sokoban_solver.h"
-#include "zobrist_hash.h"
 
 using namespace std;
 

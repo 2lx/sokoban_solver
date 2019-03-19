@@ -29,13 +29,13 @@ public:
     }
 
     void print() const {
-        size_t max = 0;
-        for (size_t i = 0; i < box_states.bucket_count(); i++) {
-            if (box_states.bucket_size(i) > max) {
-                max = box_states.bucket_size(i);
-            }
-            std::cout << box_states.bucket_size(i) << ' ';
-        }
+        // size_t max = 0;
+        // for (size_t i = 0; i < box_states.bucket_count(); i++) {
+        //     if (box_states.bucket_size(i) > max) {
+        //         max = box_states.bucket_size(i);
+        //     }
+        //     std::cout << box_states.bucket_size(i) << ' ';
+        // }
         /* for (const auto bs: box_states) { */
         /*     std::cout << "state " << bs.unique_index << ": " */
         /*               << "[player={" << bs.player_position << "}, boxes={"; */

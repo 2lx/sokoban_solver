@@ -1,6 +1,7 @@
 find_package(Boost COMPONENTS unit_test_framework REQUIRED)
 include_directories(${TEST_SOURCE_DIR}
                     ../src
+                    ../src/sparse_graph
                     ${Boost_INCLUDE_DIRS}
                     )
 
