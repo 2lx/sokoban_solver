@@ -39,7 +39,7 @@ void Solver::print_solution(std::ostream & stream) const {
 
     auto path = tgraph.get_path();
     if (path.has_value()) {
-        stream << join(path.value(), " ") << endl;
+        stream << string_join(path.value(), " ") << endl;
     }
 }
 

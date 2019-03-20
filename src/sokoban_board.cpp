@@ -2,15 +2,20 @@
 #include "sokoban_boxstate.h"
 #include "sokoban_formatter.h"
 
-#include <algorithm>
 #include "replace_sorted.h"
 #include "string_join.h"
+
+#include <algorithm>
 #include <iostream>
+#include <set>
+#include <iomanip>
 
 using namespace Sokoban;
 using namespace std;
 
 bool Board::initialize(std::vector<Tile> && maze, size_t width, size_t height) {
+    assert(maze.size() <= MAX_TILE_COUNT);
+
     _tiles = move(maze);
     _width = width;
     _height = height;
@@ -22,10 +27,6 @@ bool Board::initialize(std::vector<Tile> && maze, size_t width, size_t height) {
 }
 
 bool Board::initialize_indexes() {
-    _is_wall.resize(_tiles.size());
-    _is_goal.resize(_tiles.size());
-    _is_box.resize(_tiles.size());
-
     for (index_t i = 0; i < _tiles.size(); i++) {
         const auto & tile = _tiles[i];
 
@@ -56,7 +57,9 @@ bool Board::initialize_indexes() {
 bool Board::initialize_graphs() {
     const size_t count = _width * _height;
     _all_moves.resize(count);
-    _all_pushes.resize(count);
+
+    SparseGraph<index_t, DIR_COUNT, true>  all_pushes;
+    all_pushes.resize(count);
 
     for (index_t i = 0; i < count; i++) {
         if (_is_wall[i]) { continue; }
@@ -73,12 +76,12 @@ bool Board::initialize_graphs() {
 
         // insert reversed edges
         if (is_passable_u && is_passable_d) {
-            _all_pushes.insert_edge(ind_u, i);
-            _all_pushes.insert_edge(ind_d, i);
+            all_pushes.insert_edge(ind_u, i);
+            all_pushes.insert_edge(ind_d, i);
         }
         if (is_passable_l && is_passable_r) {
-            _all_pushes.insert_edge(ind_l, i);
-            _all_pushes.insert_edge(ind_r, i);
+            all_pushes.insert_edge(ind_l, i);
+            all_pushes.insert_edge(ind_r, i);
         }
 
         if (is_passable_u) { _all_moves.insert_edge(i, ind_u); }
@@ -87,15 +90,65 @@ bool Board::initialize_graphs() {
         if (is_passable_d) { _all_moves.insert_edge(i, ind_d); }
     }
 
-    /* for (const auto goali: _goals) { */
-    /*     auto passable_boxes = _all_pushes.check_if_passable(goali, _boxes); */
-    /* } */
+    // collect all achievable goals for each box
+    _boxes_goals.resize(_boxes.size(), {});
+    for (const auto goali: _goals) {
+        const auto passable_boxes = all_pushes.check_if_passable(goali, _boxes);
+        for (size_t i = 0; i < passable_boxes.size(); ++i) {
+            if (passable_boxes[i]) {
+                _boxes_goals[i].push_back(goali);
+            }
+        }
+    }
 
-    _all_pushes.remove_impassable(_goals);
-    _all_pushes.transpose();
+    // perform the bipartite matching
+    set<index_t> matched_goals;
+    auto it = find_if(begin(_boxes_goals), end(_boxes_goals),
+                      [](auto bg){ return bg.size() == 1; });
+    while (it != end(_boxes_goals)) {
+        index_t goali = (*it)[0];
+        auto erase_goali = [goali](auto & vec) {
+            vec.erase(remove(begin(vec), end(vec), goali), end(vec));
+        };
+
+        for_each(begin(_boxes_goals), it, erase_goali);
+        for_each(next(it), end(_boxes_goals), erase_goali);
+
+        matched_goals.insert(goali);
+        it = find_if(begin(_boxes_goals), end(_boxes_goals),
+                    [&matched_goals](auto bg){ return bg.size() == 1
+                                                   && matched_goals.count(bg[0]) == 0; });
+    }
+
+    // calculate the routes of the boxes (all possible pushes for every box)
+    _boxes_routes.resize(_boxes.size(), all_pushes);
+    for (size_t i = 0; i < _boxes.size(); ++i) {
+        _boxes_routes[i].remove_impassable(_boxes_goals[i]);
+        _boxes_routes[i].transpose();
+    }
+
     update_boxdep_moves();
 
+    // print states
+    cout << "LEVEL: " << endl;
+    print_state();
+    print_graphs();
+
     return true;
+}
+
+void Board::print_graphs() const {
+    for (size_t i = 0; i < _boxes.size(); ++i) {
+        auto nodes = _boxes_routes[i].nodes();
+        vector<index_t> pushes;
+        for_each (nodes.begin(_boxes[i]), nodes.end(),
+                [&pushes](auto ind){ pushes.push_back(ind); });
+
+        cout << "BOX[" << i << "]=" << _boxes[i]
+             << ": GOALS: " << string_join(_boxes_goals[i], ",")
+             << "; PUSHES: " << endl;
+        print_state(pushes);
+    }
 }
 
 bool Board::initialize_checks() {
@@ -192,35 +245,27 @@ void Board::print_state(const vector<index_t> & marked) const {
 
     auto it = level.cbegin();
     for (size_t i = 0u; i < _height; ++i) {
+        cout << setw(4) << distance(cbegin(level), it) << ": ";
         copy_n(it, _width, ostream_iterator<char>(cout));
-        cout << '\n';
         advance(it, _width);
+        cout << " :" << distance(cbegin(level), it) - 1 << '\n';
     }
     cout << endl;
-}
-
-void Board::print_graphs() const {
-    /* cout << "Possible moves:\n"; */
-    /* _all_moves.print(); */
-    /* cout << endl; */
-    /*  */
-    /* cout << "Possible pushes:\n"; */
-    /* _all_pushes.print(); */
 }
 
 BoxState Board::current_state() {
     BoxState state;
 
-    auto nodes = _boxdep_moves.nodes();
-    index_t min = MAX_TILE_COUNT;
-
     // we don't use min_element because the graph iterator has the input_iterator category,
     // so we can't read a value twice
+    auto nodes = _boxdep_moves.nodes();
+    index_t min = MAX_TILE_COUNT;
     for_each (nodes.begin(_player), nodes.end(),
               [&min](const auto ind){ if (min > ind) { min = ind; } });
-    state.player_position = min;
 
-    copy(begin(_boxes), end(_boxes), begin(state.box_positions));
+    state.player_index = min;
+    copy(begin(_boxes), end(_boxes), begin(state.box_indexes));
+    state.box_bits = _is_box;
 
     return state;
 }
@@ -233,27 +278,29 @@ void Board::update_boxdep_moves() {
 }
 
 void Board::set_boxstate_and_push(const BoxState & bs, const PushInfo & pt) {
-    for (auto bi: _boxes) { _is_box[bi] = false; }
+    // set the state
+    copy_n(begin(bs.box_indexes), _boxes.size(), begin(_boxes));
+    _is_box = bs.box_bits;
 
-    copy_n(begin(bs.box_positions), _boxes.size(), begin(_boxes));
-    replace_sorted(begin(_boxes), end(_boxes), pt.from(), pt.to());
-    for (auto bi: _boxes) { _is_box[bi] = true; }
-
+    // perform the push
+    _is_box[pt.from()] = false;
+    _is_box[pt.to()] = true;
+    replace(begin(_boxes), end(_boxes), pt.from(), pt.to());
     _player = pt.from();
+
     update_boxdep_moves();
 }
 
 void Board::set_boxstate(const BoxState & bs) {
-    for (auto bi: _boxes) { _is_box[bi] = false; }
-    copy_n(begin(bs.box_positions), _boxes.size(), begin(_boxes));
-    for (auto bi: _boxes) { _is_box[bi] = true; }
+    copy_n(begin(bs.box_indexes), _boxes.size(), begin(_boxes));
+    _is_box = bs.box_bits;
+    _player = bs.player_index;
 
-    _player = bs.player_position;
     update_boxdep_moves();
 }
 
 bool Board::is_complete() const {
-    return _boxes == _goals;
+    return _is_box == _is_goal;
 }
 
 vector<PushInfo> Board::possible_pushes() {
@@ -266,9 +313,11 @@ vector<PushInfo> Board::possible_pushes() {
     for_each(nodes.begin(_player), nodes.end(),
              [&valid_moves](auto ind){ valid_moves[ind] = true; });
 
-    for (const auto ibox: _boxes) {
+    for (size_t i = 0; i < _boxes.size(); ++i) {
+        const auto ibox = _boxes[i];
         _is_box[ibox] = false;
-        for (auto it = _all_pushes.edges_begin(ibox); it != _all_pushes.edges_end(); ++it) {
+        const auto & groute = _boxes_routes[i];
+        for (auto it = groute.edges_begin(ibox); it != groute.edges_end(); ++it) {
             index_t ibox_dest = *it;
 
             // we can omit the check of iplayer_dest correctness, because

@@ -9,7 +9,7 @@
 
 // join all items in a container into a string, using a 'delim' as separator
 template <typename Range, typename Value = typename Range::value_type>
-std::string join(const Range & elements, const char * const delim = " ") {
+std::string string_join(const Range & elements, const char * const delim = " ") {
     std::ostringstream os;
     auto first = std::begin(elements),
          last  = std::end(elements);

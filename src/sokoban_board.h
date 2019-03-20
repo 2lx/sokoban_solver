@@ -6,6 +6,7 @@
 #include "sparse_graph.h"
 
 #include <vector>
+#include <bitset>
 #include <functional>
 #include <string>
 
@@ -21,13 +22,13 @@ class Board {
     std::vector<index_t> _goals;
     std::vector<index_t> _boxes;
     SparseGraph<index_t, DIR_COUNT, false> _all_moves;
-    SparseGraph<index_t, DIR_COUNT, true>  _all_pushes;
     SparseGraph<index_t, DIR_COUNT, false> _boxdep_moves;
 
     std::vector<std::vector<std::function<bool()>>> _checks;
-    std::vector<bool> _is_wall, _is_goal, _is_box;
+    std::bitset<MAX_TILE_COUNT> _is_wall, _is_goal, _is_box;
 
     std::vector<std::vector<index_t>> _boxes_goals;
+    std::vector<SparseGraph<index_t, DIR_COUNT, true>> _boxes_routes;
 
     void update_boxdep_moves();
 
@@ -50,6 +51,7 @@ public:
 
     bool initialize(std::vector<Tile> && maze, size_t w, size_t h);
 
+    size_t count() const     { return _tiles.size(); }
     size_t box_count() const { return _boxes.size(); }
 
     BoxState current_state();
@@ -61,7 +63,6 @@ public:
 
     void print_graphs() const;
 };
-
 }
 
 #endif

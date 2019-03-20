@@ -53,24 +53,21 @@ public:
         _edges.resize(count, BLANK);
     }
 
+    void remove_edge(T from, T to) {
+        auto it = std::find(std::begin(_edges[from]), std::end(_edges[from]), to);
+        assert( it != std::end(_edges[from]) );
+        *it = EMPTY;
+    };
+
     // removes all edges adjacent with certain node
     // realized only for undirected graphs
     void remove_node(T index) {
         if (Directed) { return; }
 
-        auto remove_edge = [=](T from) {
-            auto it = std::find(std::begin(_edges[from]), std::end(_edges[from]), index);
-            assert( it != std::end(_edges[from]) );
-            *it = EMPTY;
-            //
-            // std::copy(std::next(it), std::end(_edges[from]), it);
-            // _edges[from][ADJ_MAX - 1] = EMPTY;
-        };
-
         for (auto & e: _edges[index]) {
             if (e == EMPTY) { continue; }
 
-            remove_edge(e);
+            remove_edge(e, index);
             e = EMPTY;
         }
     }
@@ -91,13 +88,13 @@ public:
     }
 
     // returns the nodes that are available from start node
-    std::vector<T> check_if_passable(const T start, std::vector<T> & nodes) {
-        auto gnodes = this->nodes();
-        std::for_each(gnodes.begin(start), gnodes.end(), [](auto){}); // just iterate
+    std::vector<bool> check_if_passable(const T start, std::vector<T> & nodes) {
+        auto grnodes = this->nodes();
+        std::for_each(grnodes.begin(start), grnodes.end(), [](auto){}); // just iterate
 
-        std::vector<T> result;
-        for (const auto node: gnodes) {
-            if (nodes.visited(node)) { result.push_back(node); }
+        std::vector<bool> result(nodes.size(), false);
+        for (size_t i = 0; i < nodes.size(); ++i) {
+            if (grnodes.visited(nodes[i])) { result[i] = true; }
         }
         return result;
     }

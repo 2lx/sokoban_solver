@@ -49,7 +49,7 @@ void TranspositionGraph::print(std::ostream & stream) const {
     for (size_t i = 0; i < graph.size(); i++) {
         stream << "st." << setw(3) << i << " ";
         if (i == graph.size() - 1) { stream << "(completed)"; }
-        stream << ':' << join(graph[i], ", ") << '\n';
+        stream << ':' << string_join(graph[i], ", ") << '\n';
     }
 }
 }
