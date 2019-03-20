@@ -28,6 +28,10 @@ public:
         }
         return std::nullopt;
     }
+
+    static constexpr char decode(Tile tile) noexcept {
+        return alphabet[static_cast<size_t>(tile)];
+    }
 };
 
 }

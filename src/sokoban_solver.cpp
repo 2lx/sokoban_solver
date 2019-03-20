@@ -5,9 +5,7 @@
 #include "string_join.h"
 
 #include <iterator>
-#include <istream>
-#include <ostream>
-#include <iomanip>
+#include <iostream>
 #include <string>
 
 using namespace std;
@@ -36,7 +34,7 @@ bool Solver::read_level_data(std::istream & stream) {
 
 void Solver::print_solution(std::ostream & stream) const {
     // board.print_graphs();
-    // tgraph.print(stream);
+    tgraph.print(cout);
     /* ttable.print(); */
 
     auto path = tgraph.get_path();
@@ -46,6 +44,7 @@ void Solver::print_solution(std::ostream & stream) const {
 }
 
 bool Solver::solve() {
+    assert(board.box_count() <= MAX_BOX_COUNT);
     BoxState::set_box_count(board.box_count());
 
     queue<pair<stateid_t, BoxState>> q;

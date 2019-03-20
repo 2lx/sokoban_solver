@@ -11,11 +11,11 @@
 template <typename Range, typename Value = typename Range::value_type>
 std::string join(const Range & elements, const char * const delim = " ") {
     std::ostringstream os;
-    auto first = begin(elements),
-         last  = end(elements);
+    auto first = std::begin(elements),
+         last  = std::end(elements);
 
     if (first != last) {
-        auto plast = prev(last);
+        auto plast = std::prev(last);
         std::copy(first, plast, std::ostream_iterator<Value>(os, delim));
         os << *plast;
     }
