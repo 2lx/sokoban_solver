@@ -90,6 +90,18 @@ public:
         }
     }
 
+    // returns the nodes that are available from start node
+    std::vector<T> check_if_passable(const T start, std::vector<T> & nodes) {
+        auto gnodes = this->nodes();
+        std::for_each(gnodes.begin(start), gnodes.end(), [](auto){}); // just iterate
+
+        std::vector<T> result;
+        for (const auto node: gnodes) {
+            if (nodes.visited(node)) { result.push_back(node); }
+        }
+        return result;
+    }
+
     // realized only for directed graphs
     void remove_impassable(std::vector<T> & goals) {
         auto nodes = this->nodes();

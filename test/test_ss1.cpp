@@ -98,3 +98,34 @@ BOOST_AUTO_TEST_CASE(JuniorLevel06)
     test(indata, {outdata});
 }
 
+BOOST_AUTO_TEST_CASE(Corral01)
+{
+    const char * indata = 1 + R"(
+#######
+#. $  #
+#+$   #
+#######
+)";
+    const char * outdata = 1 + R"(
+10:R 11:L 10:L 9:L 16:L
+)";
+    test(indata, {outdata});
+}
+
+BOOST_AUTO_TEST_CASE(Bipartite01)
+{
+    const char * indata = 1 + R"(
+######
+#.$  #
+# @$ #
+#$ . #
+#. $.#
+######
+)";
+    const char * outdata = 1 + R"(
+8:L 15:D 19:D 27:R
+)";
+    test(indata, {outdata});
+}
+
+

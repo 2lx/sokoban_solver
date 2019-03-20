@@ -66,26 +66,30 @@ bool Board::initialize_graphs() {
         const index_t ind_r = static_cast<index_t>(i + 1u);
         const index_t ind_d = static_cast<index_t>(i + _width);
 
-        const bool is_passableup    = (i / _width != 0)           && !_is_wall[ind_u];
-        const bool is_passableleft  = (i % _width != 0)           && !_is_wall[ind_l];
-        const bool is_passableright = (i % _width != _width  - 1) && !_is_wall[ind_r];
-        const bool is_passabledown  = (i / _width != _height - 1) && !_is_wall[ind_d];
+        const bool is_passable_u = (i / _width != 0)           && !_is_wall[ind_u];
+        const bool is_passable_l = (i % _width != 0)           && !_is_wall[ind_l];
+        const bool is_passable_r = (i % _width != _width  - 1) && !_is_wall[ind_r];
+        const bool is_passable_d = (i / _width != _height - 1) && !_is_wall[ind_d];
 
         // insert reversed edges
-        if (is_passableup && is_passabledown) {
+        if (is_passable_u && is_passable_d) {
             _all_pushes.insert_edge(ind_u, i);
             _all_pushes.insert_edge(ind_d, i);
         }
-        if (is_passableleft && is_passableright) {
+        if (is_passable_l && is_passable_r) {
             _all_pushes.insert_edge(ind_l, i);
             _all_pushes.insert_edge(ind_r, i);
         }
 
-        if (is_passableup)    { _all_moves.insert_edge(i, ind_u); }
-        if (is_passableleft)  { _all_moves.insert_edge(i, ind_l); }
-        if (is_passableright) { _all_moves.insert_edge(i, ind_r); }
-        if (is_passabledown)  { _all_moves.insert_edge(i, ind_d); }
+        if (is_passable_u) { _all_moves.insert_edge(i, ind_u); }
+        if (is_passable_l) { _all_moves.insert_edge(i, ind_l); }
+        if (is_passable_r) { _all_moves.insert_edge(i, ind_r); }
+        if (is_passable_d) { _all_moves.insert_edge(i, ind_d); }
     }
+
+    /* for (const auto goali: _goals) { */
+    /*     auto passable_boxes = _all_pushes.check_if_passable(goali, _boxes); */
+    /* } */
 
     _all_pushes.remove_impassable(_goals);
     _all_pushes.transpose();
@@ -132,15 +136,7 @@ bool Board::initialize_checks() {
             /* const index_t ind_d  = symmetric_index(i, -1,  0, vrefl, hrefl); */
             /* const index_t ind_dr = symmetric_index(i, -1,  1, vrefl, hrefl); */
 
-            // check if box is in square with no walls, and there are three other boxes,
-            // and there is at least one of them is not on a goal
-            // $$
-            // $?
-            if (    !_is_wall[ind_ul] && !_is_wall[ind_u] && !_is_wall[ind_l]
-                && (!_is_goal[ind_ul] || !_is_goal[ind_u] || !_is_goal[ind_l] || !_is_goal[ind])) {
-                _checks[ind].push_back(bind(check3, ind_ul, ind_u, ind_l));
-            }
-
+            if (_boxes.size() < 2) { continue; }
             // check if there are two walls, and there is a box on the left
             // ##
             // $?
@@ -154,6 +150,17 @@ bool Board::initialize_checks() {
                 && (!_is_goal[ind] || !_is_goal[ind_u])) {
                 _checks[ind].push_back(bind(check1, ind_u));
             }
+
+            if (_boxes.size() < 4) { continue; }
+            // check if box is in square with no walls, and there are three other boxes,
+            // and there is at least one of them is not on a goal
+            // $$
+            // $?
+            if (    !_is_wall[ind_ul] && !_is_wall[ind_u] && !_is_wall[ind_l]
+                && (!_is_goal[ind_ul] || !_is_goal[ind_u] || !_is_goal[ind_l] || !_is_goal[ind])) {
+                _checks[ind].push_back(bind(check3, ind_ul, ind_u, ind_l));
+            }
+
         }
     }
     return true;
@@ -162,21 +169,32 @@ bool Board::initialize_checks() {
 bool Board::check_deadlocks(index_t ind) const {
     for (auto & fn: _checks[ind]) {
         if (fn()) {
-            /* print_state(ind); */
+            /* print_state({ ind }); */
             return true;
         }
     }
     return false;
 }
 
-void Board::print_state(const index_t marked) const {
+string Board::level_as_string() const {
+    string result(_tiles.size() + 1, ' ');
+
     for (size_t i = 0; i < _tiles.size(); ++i) {
-        Tile tile = get_tile(_is_wall[i], _player == i, _is_box[i], _is_goal[i]);
+        const Tile tile = get_tile(_is_wall[i], _player == i, _is_box[i], _is_goal[i]);
+        result[i] = Formatter::decode(tile);
+    }
+    return result;
+}
 
-        if (marked != 0 && i == marked) { cout << '?'; }
-        else { cout << Formatter::decode(tile); }
+void Board::print_state(const vector<index_t> & marked) const {
+    string level = level_as_string();
+    for_each(begin(marked), end(marked), [&level](index_t ind){ level[ind] = '?'; });
 
-        if (i % _width == _width - 1) { cout << '\n'; }
+    auto it = level.cbegin();
+    for (size_t i = 0u; i < _height; ++i) {
+        copy_n(it, _width, ostream_iterator<char>(cout));
+        cout << '\n';
+        advance(it, _width);
     }
     cout << endl;
 }

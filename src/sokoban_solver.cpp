@@ -34,7 +34,7 @@ bool Solver::read_level_data(std::istream & stream) {
 
 void Solver::print_solution(std::ostream & stream) const {
     // board.print_graphs();
-    tgraph.print(cout);
+    /* tgraph.print(cout); */
     /* ttable.print(); */
 
     auto path = tgraph.get_path();

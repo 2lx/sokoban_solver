@@ -8,7 +8,7 @@ using namespace std;
 
 namespace Sokoban {
 TranspositionGraph::TranspositionGraph() : graph{} {
-    graph.reserve(15000);
+    graph.reserve(1000000);
     graph.push_back({});
 }
 

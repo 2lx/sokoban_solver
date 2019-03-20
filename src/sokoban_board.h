@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <functional>
+#include <string>
 
 namespace Sokoban
 {
@@ -26,6 +27,8 @@ class Board {
     std::vector<std::vector<std::function<bool()>>> _checks;
     std::vector<bool> _is_wall, _is_goal, _is_box;
 
+    std::vector<std::vector<index_t>> _boxes_goals;
+
     void update_boxdep_moves();
 
     bool initialize_indexes();
@@ -33,6 +36,9 @@ class Board {
     bool initialize_checks();
 
     bool check_deadlocks(index_t ind) const;
+
+    std::string level_as_string() const;
+    void print_state(const std::vector<index_t> & marked = {}) const;
 
 public:
     Board() = default;
@@ -53,7 +59,6 @@ public:
     std::vector<PushInfo> possible_pushes();
     bool is_complete() const;
 
-    void print_state(const index_t marked = 0) const;
     void print_graphs() const;
 };
 
