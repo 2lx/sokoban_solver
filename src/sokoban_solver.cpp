@@ -67,7 +67,6 @@ bool Solver::solve() {
 
             if (inserted) {
                 tgraph.insert_state(state_id, new_state_id, p);
-                /* if (board.has_deadlock(p.to())) { continue; } */
                 q.push({new_state_id, new_state});
                 if (board.is_complete()) { return true; }
             };

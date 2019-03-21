@@ -8,7 +8,6 @@
 
 namespace Sokoban
 {
-
 class Solver {
 private:
     Solver(const Solver &) = delete;

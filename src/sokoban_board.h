@@ -2,44 +2,23 @@
 #define SOKOBAN_BOARD_H
 
 #include "sokoban_common.h"
-#include "sokoban_pushinfo.h"
-#include "sparse_graph.h"
+#include "sokoban_board_state.h"
+#include "sokoban_board_graphs.h"
+#include "sokoban_deadlock_tester.h"
 
 #include <vector>
 #include <bitset>
-#include <functional>
 #include <string>
 
 namespace Sokoban
 {
 class BoxState;
+class PushInfo;
 
 class Board {
-    std::vector<Tile> _tiles;
-    size_t _width, _height;
-
-    index_t _player;
-    std::vector<index_t> _goals;
-    std::vector<index_t> _boxes;
-    SparseGraph<index_t, DIR_COUNT, false> _all_moves;
-    SparseGraph<index_t, DIR_COUNT, false> _boxdep_moves;
-
-    std::vector<std::vector<std::function<bool()>>> _checks;
-    std::bitset<MAX_TILE_COUNT> _is_wall, _is_goal, _is_box;
-
-    std::vector<std::vector<index_t>> _boxes_goals;
-    std::vector<SparseGraph<index_t, DIR_COUNT, true>> _boxes_routes;
-
-    void update_boxdep_moves();
-
-    bool initialize_indexes();
-    bool initialize_graphs();
-    bool initialize_checks();
-
-    bool check_deadlocks(index_t ind) const;
-
-    std::string level_as_string() const;
-    void print_state(const std::vector<index_t> & marked = {}) const;
+    BoardState     _state;
+    BoardGraphs    _graphs;
+    DeadlockTester _dltester;
 
 public:
     Board() = default;
@@ -50,16 +29,15 @@ public:
     Board & operator=(Board &&) = delete;
 
     bool initialize(std::vector<Tile> && maze, size_t w, size_t h);
+    size_t box_count() const { return _state.box_count(); }
 
-    size_t count() const     { return _tiles.size(); }
-    size_t box_count() const { return _boxes.size(); }
-
-    BoxState current_state();
+    BoxState current_state() const;
     void set_boxstate(const BoxState & bs);
-    void set_boxstate_and_push(const BoxState & bs, const PushInfo & pt);
+    void set_boxstate_and_push(const BoxState & bs, const PushInfo & pi);
+
+    bool is_complete() const { return _state.is_complete(); }
 
     std::vector<PushInfo> possible_pushes();
-    bool is_complete() const;
 
     void print_graphs() const;
 };

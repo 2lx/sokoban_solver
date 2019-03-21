@@ -1,12 +1,12 @@
 #ifndef SOKOBAN_BOXSTATE_H
 #define SOKOBAN_BOXSTATE_H
 
+#include "sokoban_common.h"
+#include "zobrist_hash.h"
+
 #include <cstddef>
 #include <array>
 #include <bitset>
-
-#include "sokoban_common.h"
-#include "zobrist_hash.h"
 
 namespace Sokoban
 {
@@ -31,9 +31,6 @@ public:
 inline bool operator == (const BoxState & l, const BoxState & r) {
     return l.box_bits     == r.box_bits
         && l.player_index == r.player_index;
-
-    /* return l.player_index == r.player_index */
-    /*     && l.box_indexes  == r.box_indexes; */
 }
 
 }
