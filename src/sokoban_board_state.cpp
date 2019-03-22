@@ -63,10 +63,7 @@ string BoardState::level_as_string(bool draw_boxes) const {
     return result;
 }
 
-void BoardState::print(const vector<index_t> & marked) const {
-    string level = level_as_string(marked.empty());
-    for_each(begin(marked), end(marked), [&level](index_t ind){ level[ind] = '?'; });
-
+void BoardState::print_level_string(const std::string & level) const {
     auto it = level.cbegin();
     for (size_t i = 0u; i < _height; ++i) {
         cout << setw(4) << distance(cbegin(level), it) << ": ";
@@ -75,5 +72,23 @@ void BoardState::print(const vector<index_t> & marked) const {
         cout << " :" << distance(cbegin(level), it) - 1 << '\n';
     }
     cout << endl;
+}
+
+void BoardState::print_distances(const vector<size_t> & distances) const {
+    string level = level_as_string(false);
+    for (size_t i = 0; i < distances.size(); ++i) {
+        if (distances[i] != 0) {
+            level[i] = Formatter::number_to_char(distances[i]);
+        }
+    }
+
+    print_level_string(level);
+}
+
+void BoardState::print(const vector<index_t> & marked) const {
+    string level = level_as_string(marked.empty());
+    for_each(begin(marked), end(marked), [&level](index_t ind){ level[ind] = '?'; });
+
+    print_level_string(level);
 }
 

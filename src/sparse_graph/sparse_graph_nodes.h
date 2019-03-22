@@ -14,8 +14,8 @@ class SparseGraphNodesIterator;
 
 template <typename T, size_t ADJ_MAX, bool Directed>
 class SparseGraphNodes {
-    friend class SparseGraphNodesIterator<T, ADJ_MAX, Directed>;
     friend class SparseGraph<T, ADJ_MAX, Directed>;
+    friend class SparseGraphNodesIterator<T, ADJ_MAX, Directed>;
 
     const SparseGraph<T, ADJ_MAX, Directed> & _graph;
     std::queue<T> _queue;
@@ -81,6 +81,38 @@ public:
 
     SparseGraphNodesIterator<T, ADJ_MAX, Directed> end() {
         return {};
+    }
+
+    std::vector<size_t> get_distances(T start) {
+        assert(start < _graph.size());
+        recover_state();
+
+        std::vector<size_t> result(_graph.size(), 0u);
+        std::queue<size_t> distances;
+
+        distances.push(0u);
+        _queue.push(start);
+        _visited[start] = true;
+        _traversed = true;
+
+        while (!_queue.empty()) {
+            auto nodei = _queue.front();
+            auto dist = distances.front();
+            _queue.pop();
+            distances.pop();
+            result[nodei] = dist;
+
+            for (const auto ind: _graph._edges[nodei]) {
+                if (   ind == SparseGraph<T, ADJ_MAX, Directed>::EMPTY
+                    || _visited[ind]) { continue; }
+
+                _queue.push(ind);
+                distances.push(dist + 1);
+                _visited[ind] = true;
+            }
+        }
+
+        return result;
     }
 };
 

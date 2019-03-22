@@ -91,10 +91,25 @@ void Board::print_graphs() const {
         for_each (nodes.begin(boxi), nodes.end(),
                 [&pushes](auto ind){ pushes.push_back(ind); });
 
-        cout << "BOX[" << i << "]=" << boxi
-             << ": GOALS: " << string_join(_graphs.goals(i), ",")
-             << "; PUSHES: " << endl;
+        cout << "Box[" << i << "]=" << boxi
+             << ": goals=[" << string_join(_graphs.goals(i), ",")
+             << "], route: " << endl;
         _state.print(pushes);
     }
+
+    for (size_t i = 0; i < _state.box_count(); ++i) {
+        const index_t goali = _state.goal_indexes()[i];
+
+        cout << "Distances to goal[" << i << "] at " << goali << ":\n";
+        _state.print_distances(_graphs.distances_to_goal(i));
+    }
+
+    cout << "Goals order:\n";
+    std::vector<size_t> order_as_distance(_state.tile_count(), 0u);
+    size_t counter = 1u;
+    for (const auto go: _graphs.goals_order()) {
+        order_as_distance[go] = counter++;
+    }
+    _state.print_distances(order_as_distance);
 }
 

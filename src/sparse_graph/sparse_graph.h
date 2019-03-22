@@ -22,7 +22,6 @@ template <typename T, size_t ADJ_MAX, bool Directed>
 class SparseGraph {
 private:
     friend class SparseGraphNodes<T, ADJ_MAX, Directed>;
-    friend class SparseGraphNodesIterator<T, ADJ_MAX, Directed>;
     friend class SparseGraphEdgesIterator<T, ADJ_MAX, Directed>;
 
     std::vector<std::array<T, ADJ_MAX>> _edges;
@@ -42,6 +41,9 @@ public:
     }
 
     SparseGraph(const SparseGraph &) = default;
+    SparseGraph(SparseGraph &&) = default;
+    SparseGraph & operator=(const SparseGraph &) = default;
+    SparseGraph & operator=(SparseGraph &&) = default;
 
     auto nodes() const {
         return SparseGraphNodes<T, ADJ_MAX, Directed>(*this);
@@ -55,20 +57,29 @@ public:
 
     void remove_edge(T from, T to) {
         auto it = std::find(std::begin(_edges[from]), std::end(_edges[from]), to);
-        assert( it != std::end(_edges[from]) );
-        *it = EMPTY;
+
+        if constexpr (!Directed) {
+            assert( it != std::end(_edges[from]) );
+            *it = EMPTY;
+        }
+        else {
+            if (it != end(_edges[from])) { *it = EMPTY; }
+        }
     };
 
     // removes all edges adjacent with certain node
-    // realized only for undirected graphs
     void remove_node(T index) {
-        if (Directed) { return; }
-
         for (auto & e: _edges[index]) {
             if (e == EMPTY) { continue; }
 
-            remove_edge(e, index);
+            if constexpr (!Directed) { remove_edge(e, index); }
             e = EMPTY;
+        }
+
+        if constexpr (Directed) {
+            for (T from = 0; from < _edges.size(); ++from) {
+                remove_edge(from, index);
+            }
         }
     }
 
@@ -100,9 +111,11 @@ public:
     }
 
     // realized only for directed graphs
-    void remove_impassable(std::vector<T> & goals) {
+    void remove_impassable(std::vector<T> & start_indexes) {
+        if constexpr (!Directed) return;
+
         auto nodes = this->nodes();
-        std::for_each(nodes.begin(goals), nodes.end(), [](auto){}); // just iterate
+        std::for_each(nodes.begin(start_indexes), nodes.end(), [](auto){}); // just iterate
 
         for (size_t i = 0; i < _edges.size(); i++) {
             if (!nodes.visited(i)) { _edges[i] = BLANK; }

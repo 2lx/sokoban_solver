@@ -19,7 +19,9 @@ class BoardGraphs {
     UGraph _boxdep_moves;
 
     std::vector<std::vector<index_t>> _boxes_goals;
-    std::vector<DGraph> _boxes_routes;
+    std::vector<std::vector<size_t>>  _goals_distances;
+    std::vector<DGraph>               _boxes_routes;
+    std::vector<index_t>              _goals_order;
 
     size_t _count, _box_count;
 
@@ -30,11 +32,20 @@ public:
     void bipartite_matching(const BoardState & state, const DGraph & reverse_pushes);
 
     void calculate_routes(const DGraph & reverse_pushes);
+    void calculate_goals_distances(const BoardState & state,
+                                   const DGraph & reverse_pushes);
+    void calculate_goals_order(const BoardState & state,
+                               const DGraph & reverse_pushes);
 
     const auto & route(const size_t ind) const { return _boxes_routes[ind]; }
     const auto & goals(const size_t ind) const { return _boxes_goals[ind]; }
+    const auto & distances_to_goal(const size_t goali) const { return _goals_distances[goali]; }
+    const auto & distance_to_goal_from(size_t goali, size_t ind) const {
+        return _goals_distances[goali][ind]; }
+    const auto & goals_order() const { return _goals_order; }
 
     index_t min_move_index(index_t player) const;
+
     void narrow_moves(const std::vector<index_t> & indexes);
     flags narrowed_moves_bitset(const index_t from) const;
 };

@@ -32,6 +32,16 @@ public:
     static constexpr char decode(Tile tile) noexcept {
         return alphabet[static_cast<size_t>(tile)];
     }
+
+    static constexpr char number_to_char(const size_t num) {
+        if (num < 10) {
+            return static_cast<char>('0' + num);
+        } else if (num < 36) {
+            return static_cast<char>('A' + num - 10);
+        } else {
+            return 'Z';
+        }
+    }
 };
 
 }

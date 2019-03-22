@@ -2,6 +2,8 @@
 #include "sokoban_board_state.h"
 
 #include <set>
+#include <iostream>
+#include "string_join.h"
 
 using namespace Sokoban;
 using namespace std;
@@ -11,7 +13,7 @@ bool BoardGraphs::initialize(const BoardState & state) {
     _box_count = state.box_count();
     _all_moves.resize(_count);
 
-    SparseGraph<index_t, DIR_COUNT, true> reverse_pushes;
+    DGraph reverse_pushes;
     reverse_pushes.resize(_count);
 
     for (index_t i = 0; i < _count; i++) {
@@ -49,6 +51,8 @@ bool BoardGraphs::initialize(const BoardState & state) {
     }
 
     bipartite_matching(state, reverse_pushes);
+    calculate_goals_distances(state, reverse_pushes);
+    calculate_goals_order(state, reverse_pushes);
     calculate_routes(reverse_pushes);
     narrow_moves(state.box_indexes());
 
@@ -90,12 +94,61 @@ void BoardGraphs::bipartite_matching(const BoardState & state, const DGraph & re
 
 // calculates the routes of the boxes (all possible pushes for every box)
 // The routes depend on bipartite matching results and results of minimum matching algorithm
-void BoardGraphs::calculate_routes(const SparseGraph<index_t, DIR_COUNT, true> & reverse_pushes) {
+void BoardGraphs::calculate_routes(const DGraph & reverse_pushes) {
     _boxes_routes.resize(_box_count, reverse_pushes);
 
     for (size_t i = 0; i < _box_count; ++i) {
         _boxes_routes[i].remove_impassable(_boxes_goals[i]);
         _boxes_routes[i].transpose();
+    }
+}
+
+void BoardGraphs::calculate_goals_distances(const BoardState & state,
+                                            const DGraph & reverse_pushes) {
+    _goals_distances.resize(_box_count);
+    auto nodes = reverse_pushes.nodes();
+
+    for (size_t i = 0; i < _box_count; ++i) {
+        _goals_distances[i] = move(nodes.get_distances(state.goal_indexes()[i]));
+    }
+}
+
+void BoardGraphs::calculate_goals_order(const BoardState & state,
+                                        const DGraph & reverse_pushes) {
+    vector<index_t> unordered_goals{ state.goal_indexes() };
+    DGraph base_rpushes{ reverse_pushes };
+
+    while (!unordered_goals.empty()) {
+        for (const auto goali: unordered_goals) {
+            DGraph trpushes{ base_rpushes };
+            trpushes.remove_node(goali);
+
+            /* bool at_least_one_passable = false; */
+            bool all_passable = true;
+
+            // for each remaining goal, check if there are any boxes,
+            // that have become unpassable for it (after removing the node)
+            for (const auto chgi: unordered_goals) {
+                if (chgi == goali) { continue; }
+
+                const auto passbits = trpushes.check_if_passable(chgi, state.box_indexes());
+                /* cout << string_join(passbits, "") << endl; */
+
+                for (size_t i = 0; i < _box_count; ++i) {
+                    if (binary_search(begin(_boxes_goals[i]), end(_boxes_goals[i]), chgi)) {
+                        if (!passbits[i]) { all_passable = false; }
+                    }
+                }
+            }
+
+            if (all_passable) {
+                _goals_order.push_back(goali);
+                unordered_goals.erase(remove(begin(unordered_goals), end(unordered_goals), goali),
+                                      end(unordered_goals));
+                base_rpushes.remove_node(goali);
+                break;
+            }
+        }
     }
 }
 

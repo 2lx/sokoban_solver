@@ -18,6 +18,7 @@ class BoardState {
     flags _is_wall, _is_goal, _is_box;
 
     std::string level_as_string(bool draw_boxes) const;
+    void print_level_string(const std::string & level) const;
 
 public:
     BoardState() = default;
@@ -29,6 +30,7 @@ public:
 
     bool initialize(std::vector<Tile> && tiles, size_t width, size_t height);
     void print(const std::vector<index_t> & marked = {}) const;
+    void print_distances(const std::vector<size_t> & distances) const;
 
     BoxState current_boxstate() const;
     void set_boxstate(const BoxState & bs);
@@ -44,7 +46,8 @@ public:
     index_t player() const                            { return _player; }
     const std::vector<index_t> & box_indexes()  const { return _boxes; }
     const std::vector<index_t> & goal_indexes() const { return _goals; }
-    /* const flags & box_bits() const                   { return _is_box; } */
+    index_t box_index(size_t index)  const { return _boxes[index]; }
+    index_t goal_index(size_t index) const { return _goals[index]; }
 
     void remove_bitset_box(const index_t index)  { _is_box[index] = false; }
     void recover_bitset_box(const index_t index) { _is_box[index] = true;  }
