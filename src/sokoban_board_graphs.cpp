@@ -24,15 +24,15 @@ bool BoardGraphs::initialize(const BoardState & state) {
         const index_t ind_r = static_cast<index_t>(i + 1u);
         const index_t ind_d = static_cast<index_t>(i + state.width());
 
-        const bool is_topmost    = i / state.width() != 0;
-        const bool is_leftmost   = i % state.width() != 0;
-        const bool is_rightmost  = i % state.width() != state.width()  - 1;
-        const bool is_bottommost = i / state.width() != state.height() - 1;
+        const bool is_topmost    = i / state.width() == 0;
+        const bool is_leftmost   = i % state.width() == 0;
+        const bool is_rightmost  = i % state.width() == state.width()  - 1;
+        const bool is_bottommost = i / state.width() == state.height() - 1;
 
-        const bool is_passable_u = is_topmost    && !state.is_wall(ind_u);
-        const bool is_passable_l = is_leftmost   && !state.is_wall(ind_l);
-        const bool is_passable_r = is_rightmost  && !state.is_wall(ind_r);
-        const bool is_passable_d = is_bottommost && !state.is_wall(ind_d);
+        const bool is_passable_u = !is_topmost    && !state.is_wall(ind_u);
+        const bool is_passable_l = !is_leftmost   && !state.is_wall(ind_l);
+        const bool is_passable_r = !is_rightmost  && !state.is_wall(ind_r);
+        const bool is_passable_d = !is_bottommost && !state.is_wall(ind_d);
 
         // insert reversed edges
         if (is_passable_u && is_passable_d) {
@@ -49,6 +49,15 @@ bool BoardGraphs::initialize(const BoardState & state) {
         if (is_passable_r) { _all_moves.insert_edge(i, ind_r); }
         if (is_passable_d) { _all_moves.insert_edge(i, ind_d); }
     }
+
+    /* reverse_pushes.print(); */
+    /* cout << "REVERSE PUSHES:\n" << endl; */
+    /* auto nodes = reverse_pushes.nodes(); */
+    /* vector<index_t> pushes; */
+    /* for_each (nodes.begin(state.goal_index(5)), nodes.end(), */
+    /*         [&pushes](auto ind){ pushes.push_back(ind); }); */
+    /* cout << string_join(pushes, ", ") << endl; */
+    /* state.print(pushes); */
 
     bipartite_matching(state, reverse_pushes);
     calculate_goals_distances(state, reverse_pushes);
@@ -92,24 +101,14 @@ void BoardGraphs::bipartite_matching(const BoardState & state, const DGraph & re
     }
 }
 
-// calculates the routes of the boxes (all possible pushes for every box)
-// The routes depend on bipartite matching results and results of minimum matching algorithm
-void BoardGraphs::calculate_routes(const DGraph & reverse_pushes) {
-    _boxes_routes.resize(_box_count, reverse_pushes);
-
-    for (size_t i = 0; i < _box_count; ++i) {
-        _boxes_routes[i].remove_impassable(_boxes_goals[i]);
-        _boxes_routes[i].transpose();
-    }
-}
-
 void BoardGraphs::calculate_goals_distances(const BoardState & state,
                                             const DGraph & reverse_pushes) {
     _goals_distances.resize(_box_count);
-    auto nodes = reverse_pushes.nodes();
+    auto nodes = reverse_pushes.nodes_with_distances();
 
     for (size_t i = 0; i < _box_count; ++i) {
-        _goals_distances[i] = move(nodes.get_distances(state.goal_indexes()[i]));
+        std::for_each(nodes.begin(state.goal_index(i)), nodes.end(), [](auto){});
+        _goals_distances[i] = nodes.distances();
     }
 }
 
@@ -149,6 +148,17 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
                 break;
             }
         }
+    }
+}
+
+// calculates the routes of the boxes (all possible pushes for every box)
+// The routes depend on bipartite matching results and results of minimum matching algorithm
+void BoardGraphs::calculate_routes(const DGraph & reverse_pushes) {
+    _boxes_routes.resize(_box_count, reverse_pushes);
+
+    for (size_t i = 0; i < _box_count; ++i) {
+        _boxes_routes[i].remove_impassable(_boxes_goals[i]);
+        _boxes_routes[i].transpose();
     }
 }
 

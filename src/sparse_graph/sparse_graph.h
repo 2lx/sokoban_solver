@@ -6,13 +6,13 @@
 #include <limits>
 #include <algorithm>
 #include <cassert>
-/* #include <iostream> */
-/* #include <iomanip> */
+#include <iostream>
+#include <iomanip>
 
-template <typename T, size_t ADJ_MAX, bool Directed>
+template <typename T, size_t ADJ_MAX, bool Directed, bool CalcDistances>
 class SparseGraphNodes;
 
-template <typename T, size_t ADJ_MAX, bool Directed>
+template <typename T, size_t ADJ_MAX, bool Directed, bool CalcDistances>
 class SparseGraphNodesIterator;
 
 template <typename T, size_t ADJ_MAX, bool Directed>
@@ -21,7 +21,8 @@ class SparseGraphEdgesIterator;
 template <typename T, size_t ADJ_MAX, bool Directed>
 class SparseGraph {
 private:
-    friend class SparseGraphNodes<T, ADJ_MAX, Directed>;
+    friend class SparseGraphNodes<T, ADJ_MAX, Directed, true>;
+    friend class SparseGraphNodes<T, ADJ_MAX, Directed, false>;
     friend class SparseGraphEdgesIterator<T, ADJ_MAX, Directed>;
 
     std::vector<std::array<T, ADJ_MAX>> _edges;
@@ -46,7 +47,11 @@ public:
     SparseGraph & operator=(SparseGraph &&) = default;
 
     auto nodes() const {
-        return SparseGraphNodes<T, ADJ_MAX, Directed>(*this);
+        return SparseGraphNodes<T, ADJ_MAX, Directed, false>(*this);
+    }
+
+    auto nodes_with_distances() const {
+        return SparseGraphNodes<T, ADJ_MAX, Directed, true>(*this);
     }
 
     size_t size() const noexcept { return _edges.size(); }
@@ -148,17 +153,18 @@ public:
         return SparseGraphEdgesIterator<T, ADJ_MAX, Directed>();
     }
 
-    /* void print() const { */
-    /*     for (size_t i = 0; i < _edges.size(); i++) { */
-    /*         if (edges_begin(i) == edges_end()) { continue; } */
-    /*  */
-    /*         std::cout << std::setw(3) << i << ": "; */
-    /*         for (auto it = edges_begin(i); it != edges_end(); ++it) { */
-    /*             std::cout << std::setw(4) << *it; */
-    /*         } */
-    /*         std::cout << '\n'; */
-    /*     } */
-    /* } */
+    void print() const {
+        using namespace std;
+        for (size_t i = 0; i < _edges.size(); i++) {
+            if (edges_begin(i) == edges_end()) { continue; }
+
+            cout << setw(3) << i << ": ";
+            for (auto it = edges_begin(i); it != edges_end(); ++it) {
+                cout << setw(4) << *it;
+            }
+            cout << '\n';
+        }
+    }
 };
 
 #include "sparse_graph_nodes.h"

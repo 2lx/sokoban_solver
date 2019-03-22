@@ -6,15 +6,15 @@
 template <typename T, size_t ADJ_MAX, bool Directed>
 class SparseGraph;
 
-template <typename T, size_t ADJ_MAX, bool Directed>
+template <typename T, size_t ADJ_MAX, bool Directed, bool CalcDistances>
 class SparseGraphNodes;
 
-template <typename T, size_t ADJ_MAX, bool Directed>
+template <typename T, size_t ADJ_MAX, bool Directed, bool CalcDistances>
 class SparseGraphNodesIterator {
-    SparseGraphNodes<T, ADJ_MAX, Directed> * _graph_nodes;
+    SparseGraphNodes<T, ADJ_MAX, Directed, CalcDistances> * _graph_nodes;
 
 public:
-    SparseGraphNodesIterator(SparseGraphNodes<T, ADJ_MAX, Directed> & gn)
+    SparseGraphNodesIterator(SparseGraphNodes<T, ADJ_MAX, Directed, CalcDistances> & gn)
         : _graph_nodes{ &gn } { }
 
     SparseGraphNodesIterator() : _graph_nodes{nullptr} { }
@@ -22,7 +22,11 @@ public:
     ~SparseGraphNodesIterator() { }
 
     T operator *() const {
-        return _graph_nodes->_queue.front();
+        if constexpr (CalcDistances) {
+            return _graph_nodes->_queue.front().second;
+        } else {
+            return _graph_nodes->_queue.front();
+        }
     }
 
     SparseGraphNodesIterator & operator ++() {
@@ -41,8 +45,8 @@ public:
 
 namespace std
 {
-template <typename T, size_t ADJ_MAX, bool Directed>
-struct iterator_traits<SparseGraphNodesIterator<T, ADJ_MAX, Directed>> {
+template <typename T, size_t ADJ_MAX, bool Directed, bool CalcDistances>
+struct iterator_traits<SparseGraphNodesIterator<T, ADJ_MAX, Directed, CalcDistances>> {
     using iterator_category = std::input_iterator_tag;
     using value_type        = T;
 };
