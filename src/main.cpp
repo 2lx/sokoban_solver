@@ -11,6 +11,6 @@ int main() {
     }
 
     if (solver.solve()) {
-        solver.print_solution(cout);
+        solver.print_solution_format1(cout);
     }
 }

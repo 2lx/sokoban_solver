@@ -3,41 +3,36 @@
 
 #include <iomanip>
 #include <ostream>
+#include <cassert>
 
 using namespace std;
 
 namespace Sokoban {
-TranspositionGraph::TranspositionGraph() : graph{} {
-    graph.reserve(1000000);
-    graph.push_back({});
+TranspositionGraph::TranspositionGraph() : _graph{} {
+    _graph.reserve(1000000u);
+    _graph.push_back({0u, {0u, 0u}});
 }
 
 void TranspositionGraph::insert_state(stateid_t base_state_id,
-        stateid_t new_state_id, PushInfo pt) {
-    graph.push_back({});
-    graph[base_state_id].emplace_back(new_state_id, pt);
+                                      stateid_t new_state_id, PushInfo pi) {
+    _graph.push_back({base_state_id, pi});
+    assert(new_state_id + 1 == _graph.size());
 }
 
 std::optional<std::vector<PushInfo>> TranspositionGraph::get_path() const {
     std::vector<PushInfo> path;
-    // the destination stateid is always the last inserted one
-    const auto dest = static_cast<stateid_t>(graph.size() - 1);
+    path.reserve(1000u);
 
-    // graph is acyclic, so we don't need 'visited' flags
-    if (collect_path(path, 0u, dest)) { return path; }
-    return std::nullopt;
-}
+    stateid_t parent_id = _graph.back().stateid;
+    path.push_back(_graph.back().pushinfo);
 
-bool TranspositionGraph::collect_path(std::vector<PushInfo> & path,
-                                      stateid_t index, stateid_t dest) const {
-    if (index == dest) { return true; }
-
-    for (const auto & [next_state_id, pushinfo]: graph[index]) {
-        path.push_back(pushinfo);
-        if (collect_path(path, next_state_id, dest)) { return true; }
-        path.pop_back();
+    while (parent_id != 0u) {
+        path.push_back(_graph[parent_id].pushinfo);
+        parent_id = _graph[parent_id].stateid;
     }
-    return false;
+
+    reverse(begin(path), end(path));
+    return path;
 }
 
 std::ostream & operator<<(std::ostream & stream, const TranspositionGraph::GValue & gv) {
@@ -46,10 +41,10 @@ std::ostream & operator<<(std::ostream & stream, const TranspositionGraph::GValu
 }
 
 void TranspositionGraph::print(std::ostream & stream) const {
-    for (size_t i = 0; i < graph.size(); i++) {
+    for (size_t i = 0; i < _graph.size(); i++) {
         stream << "st." << setw(3) << i << " ";
-        if (i == graph.size() - 1) { stream << "(completed)"; }
-        stream << ':' << string_join(graph[i], ", ") << '\n';
+        if (i == _graph.size() - 1) { stream << "(completed)"; }
+        stream << ':' << _graph[i] << '\n';
     }
 }
 }

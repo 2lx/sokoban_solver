@@ -33,14 +33,32 @@ bool Solver::read_level_data(std::istream & stream) {
     return board.initialize(move(maze), width, height);
 }
 
-void Solver::print_solution(std::ostream & stream) const {
+void Solver::print_solution_format1(std::ostream & stream) {
     // board.print_graphs();
-    /* tgraph.print(cout); */
-    /* ttable.print(); */
+    /* _trans_graph.print(cout); */
+    /* _trans_table.print(); */
 
-    auto path = tgraph.get_path();
+    cout << "Solution (" << _trans_table.size() << " states):" << endl;
+    auto path = _trans_graph.get_path();
     if (path.has_value()) {
         stream << string_join(path.value(), " ") << endl;
+    }
+}
+
+void Solver::print_solution_format2(std::ostream & stream) {
+    cout << "Solution (" << _trans_table.size() << " states):" << endl;
+    auto path = _trans_graph.get_path();
+    if (path.has_value()) {
+        board.set_boxstate(_base_state);
+        board.print_state();
+
+        for (size_t i = 0; i < path.value().size(); ++i) {
+            const PushInfo & pi = path.value()[i];
+            board.set_boxstate_and_push(board.current_state(), pi);
+
+            stream << pi << '\n';
+            board.print_state();
+        }
     }
 }
 
@@ -49,12 +67,12 @@ size_t Solver::max_priority() const {
 }
 
 size_t Solver::calculate_priority(const Board::StateStats & stats) const {
-    size_t bos = stats.boxes_on_goals_count;
+    /* size_t bos = stats.boxes_on_goals_count; */
     size_t ord_bos = stats.ordered_boxes_on_goals_count;
     size_t priority = 0u;
-    if      (stats.push_distances.first > stats.push_distances.second) { priority = 4u; }
+    if      (stats.push_distances.first > stats.push_distances.second) { priority = 2u; }
     else if (stats.push_distances.first < stats.push_distances.second) { priority = 0u; }
-    else { priority = 2u; }
+    else { priority = 1u; }
     return priority + ord_bos;
 }
 
@@ -63,9 +81,9 @@ bool Solver::solve() {
     BoxState::set_box_count(board.box_count());
 
     PriorityQueue<pair<stateid_t, BoxState>> q(max_priority() + 1);
-    auto base_state = board.current_state();
-    auto [inserted, base_state_id] = ttable.insert_state(base_state);
-    q.push(0u, {base_state_id, base_state});
+    _base_state = board.current_state();
+    auto [inserted, base_state_id] = _trans_table.insert_state(_base_state);
+    q.push(0u, {base_state_id, _base_state});
 
     while (!q.empty()) {
         auto [state_id, state] = q.front();
@@ -78,12 +96,11 @@ bool Solver::solve() {
             board.set_boxstate_and_push(state, pushinfo);
 
             auto new_state = board.current_state();
-            auto [inserted, new_state_id] = ttable.insert_state(new_state);
+            auto [inserted, new_state_id] = _trans_table.insert_state(new_state);
 
             if (inserted) {
-                tgraph.insert_state(state_id, new_state_id, pushinfo);
+                _trans_graph.insert_state(state_id, new_state_id, pushinfo);
 
-                size_t priority = calculate_priority(stats);
                 /* cout << endl; */
                 /* cout << "priority: " << priority << endl; */
                 /* cout << "push: " << pushinfo.from() << ' ' << pushinfo.to() */
@@ -94,6 +111,7 @@ bool Solver::solve() {
                 /*      << endl; */
                 /* board.print_state(); */
 
+                size_t priority = calculate_priority(stats);
                 q.push(priority, {new_state_id, new_state});
                 if (board.is_complete()) { return true; }
             };

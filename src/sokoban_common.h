@@ -42,7 +42,7 @@ constexpr Tile get_tile(bool is_wall, bool is_player, bool is_box, bool is_goal)
 }
 
 static constexpr size_t MAX_TILE_COUNT = 500;
-static constexpr size_t MAX_BOX_COUNT = 10;
+static constexpr size_t MAX_BOX_COUNT = 15;
 
 using flags = std::bitset<MAX_TILE_COUNT>;
 }

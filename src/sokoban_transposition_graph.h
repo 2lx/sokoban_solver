@@ -16,11 +16,11 @@ private:
         stateid_t stateid;
         PushInfo pushinfo;
 
-        GValue(index_t si, PushInfo pi) : stateid(si), pushinfo(pi) { };
+        GValue(stateid_t si, PushInfo pi) : stateid(si), pushinfo(pi) { };
         friend std::ostream & operator<<(std::ostream & stream, const GValue & gv);
     };
 
-    std::vector<std::vector<GValue>> graph;
+    std::vector<GValue> _graph;
 
     bool collect_path(std::vector<PushInfo> & path, stateid_t index, stateid_t dest) const;
 

@@ -19,7 +19,7 @@ bool test(const string_view & indata, const vector<string_view> & outdata) {
     BOOST_REQUIRE_MESSAGE(result == true, "Test failed: Solution was not found");
 
     ostringstream oss;
-    solver.print_solution(oss);
+    solver.print_solution_format1(oss);
 
     bool test_result = find(begin(outdata), end(outdata), oss.str()) != end(outdata);
 
