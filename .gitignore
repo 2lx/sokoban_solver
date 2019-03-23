@@ -9,3 +9,5 @@ bin/*
 **/CTestTest*
 Testing/*
 out*
+levels/*
+*.txt
