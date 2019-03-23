@@ -64,7 +64,10 @@ BOOST_AUTO_TEST_CASE(JuniorLevel03)
     const char * outdata2 = 1 + R"(
 17:U 16:L 10:R 11:R 18:R 31:D 30:L 23:U 16:U 9:L 32:R 38:L 25:D 32:D 39:R 37:L
 )";
-    test(indata, {outdata1, outdata2});
+    const char * outdata3 = 1 + R"(
+17:U 16:L 18:R 10:L 9:L 31:D 30:L 32:R 25:U 18:U 38:R 39:R 11:R 23:D 30:D 37:L
+)";
+    test(indata, {outdata1, outdata2, outdata3});
 }
 
 BOOST_AUTO_TEST_CASE(JuniorLevel01)
@@ -84,7 +87,10 @@ BOOST_AUTO_TEST_CASE(JuniorLevel01)
     const char * outdata2 = 1 + R"(
 17:U 10:L 9:L 23:L 22:D 29:D 25:U 18:U 11:R 31:R 32:R 33:D
 )";
-    test(indata, {outdata1, outdata2});
+    const char * outdata3 = 1 + R"(
+17:U 10:L 9:L 23:L 25:U 18:U 11:R 22:D 29:D 31:R 32:R 33:D
+)";
+    test(indata, {outdata1, outdata2, outdata3});
 }
 
 BOOST_AUTO_TEST_CASE(JuniorLevel06)

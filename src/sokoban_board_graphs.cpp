@@ -114,11 +114,14 @@ void BoardGraphs::calculate_goals_distances(const BoardState & state,
 
 void BoardGraphs::calculate_goals_order(const BoardState & state,
                                         const DGraph & reverse_pushes) {
-    vector<index_t> unordered_goals{ state.goal_indexes() };
+    vector<pair<size_t, index_t>> unordered_goals;
+    for (size_t i = 0; i < _box_count; ++i) {
+        unordered_goals.push_back({ i, state.goal_index(i) });
+    };
     DGraph base_rpushes{ reverse_pushes };
 
     while (!unordered_goals.empty()) {
-        for (const auto goali: unordered_goals) {
+        for (const auto [gi, goali]: unordered_goals) {
             DGraph trpushes{ base_rpushes };
             trpushes.remove_node(goali);
 
@@ -127,7 +130,7 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
 
             // for each remaining goal, check if there are any boxes,
             // that have become unpassable for it (after removing the node)
-            for (const auto chgi: unordered_goals) {
+            for (const auto [ttt, chgi]: unordered_goals) {
                 if (chgi == goali) { continue; }
 
                 const auto passbits = trpushes.check_if_passable(chgi, state.box_indexes());
@@ -141,8 +144,9 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
             }
 
             if (all_passable) {
-                _goals_order.push_back(goali);
-                unordered_goals.erase(remove(begin(unordered_goals), end(unordered_goals), goali),
+                _goals_order.push_back(gi);
+                unordered_goals.erase(remove(begin(unordered_goals), end(unordered_goals),
+                                             make_pair(gi, goali)),
                                       end(unordered_goals));
                 base_rpushes.remove_node(goali);
                 break;
@@ -160,6 +164,31 @@ void BoardGraphs::calculate_routes(const DGraph & reverse_pushes) {
         _boxes_routes[i].remove_impassable(_boxes_goals[i]);
         _boxes_routes[i].transpose();
     }
+}
+
+int BoardGraphs::push_distance_diff(const BoardState & state, size_t boxi, const PushInfo & pi) const {
+    for (const auto i: _goals_order) {
+        index_t goali = state.goal_index(i);
+
+        // if there is already a box on the goal
+        if (state.is_box(goali)) { continue; }
+
+        // if box can't move to that goal
+        if (!binary_search(begin(_boxes_goals[boxi]), end(_boxes_goals[boxi]), goali)) { continue; }
+
+        // we found the goal with the highest priority for considered box
+        // let's compare the distances before and after pushing
+        const int dist_from = static_cast<int>(_goals_distances[i][pi.from()]);
+        const int dist_to   = static_cast<int>(_goals_distances[i][pi.to()]);
+        /* cout << "goal order:" << i */
+        /*      << " from:" << dist_from */
+        /*      << " to:" << dist_to */
+        /*      << " diff:" << dist_from - dist_to << endl; */
+        return dist_from - dist_to;
+    }
+
+    assert(true);
+    return 0;
 }
 
 index_t BoardGraphs::min_move_index(index_t player) const {

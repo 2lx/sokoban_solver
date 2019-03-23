@@ -37,7 +37,7 @@ public:
 
     bool is_complete() const { return _state.is_complete(); }
 
-    std::vector<PushInfo> possible_pushes();
+    std::vector<std::pair<PushInfo, int>> possible_pushes();
 
     void print_graphs() const;
 };

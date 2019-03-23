@@ -3,6 +3,7 @@
 
 #include "sokoban_pushinfo.h"
 #include "string_join.h"
+#include "sokoban_priority_queue.h"
 
 #include <iterator>
 #include <iostream>
@@ -47,10 +48,10 @@ bool Solver::solve() {
     assert(board.box_count() <= MAX_BOX_COUNT);
     BoxState::set_box_count(board.box_count());
 
-    queue<pair<stateid_t, BoxState>> q;
+    PriorityQueue q;
     auto base_state = board.current_state();
     auto [inserted, base_state_id] = ttable.insert_state(base_state);
-    q.push({base_state_id, base_state});
+    q.push(base_state_id, base_state, 1);
 
     while (!q.empty()) {
         auto [state_id, state] = q.front();
@@ -59,15 +60,15 @@ bool Solver::solve() {
         board.set_boxstate(state);
         auto pushes = board.possible_pushes();
 
-        for (const auto p: pushes) {
-            board.set_boxstate_and_push(state, p);
+        for (const auto [pushinfo, priority]: pushes) {
+            board.set_boxstate_and_push(state, pushinfo);
 
             auto new_state = board.current_state();
             auto [inserted, new_state_id] = ttable.insert_state(new_state);
 
             if (inserted) {
-                tgraph.insert_state(state_id, new_state_id, p);
-                q.push({new_state_id, new_state});
+                tgraph.insert_state(state_id, new_state_id, pushinfo);
+                q.push(new_state_id, new_state, priority);
                 if (board.is_complete()) { return true; }
             };
         }

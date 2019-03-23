@@ -45,14 +45,14 @@ void Board::set_boxstate(const BoxState & bs) {
     _graphs.narrow_moves(_state.box_indexes());
 }
 
-vector<PushInfo> Board::possible_pushes() {
-    vector<PushInfo> result;
+vector<pair<PushInfo, int>> Board::possible_pushes() {
+    vector<pair<PushInfo, int>> result;
 
     // calculate all tile indexes which available for player with current boxes
     // and player positions
     auto valid_moves = _graphs.narrowed_moves_bitset(_state.player());
     for (size_t i = 0; i < _state.box_count(); ++i) {
-        const auto ibox = _state.box_indexes()[i];
+        const auto ibox = _state.box_index(i);
         _state.remove_bitset_box(ibox);
 
         const auto & groute = _graphs.route(i);
@@ -74,7 +74,11 @@ vector<PushInfo> Board::possible_pushes() {
             // check if the new combination of boxes is in a deadlock state
             if (_dltester.test_for_index(ibox_dest)) { continue; }
 
-            result.emplace_back(ibox, ibox_dest);
+            const PushInfo pi{ ibox, ibox_dest };
+            const int priority = _graphs.push_distance_diff(_state, i, pi);
+
+            /* result.push_back({pi, 0}); */
+            result.push_back({pi, priority});
         }
         _state.recover_bitset_box(ibox);
     }
@@ -108,7 +112,7 @@ void Board::print_graphs() const {
     std::vector<size_t> order_as_distance(_state.tile_count(), 0u);
     size_t counter = 1u;
     for (const auto go: _graphs.goals_order()) {
-        order_as_distance[go] = counter++;
+        order_as_distance[_state.goal_index(go)] = counter++;
     }
     _state.print_distances(order_as_distance);
 }
