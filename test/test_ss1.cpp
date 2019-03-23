@@ -67,7 +67,13 @@ BOOST_AUTO_TEST_CASE(JuniorLevel03)
     const char * outdata3 = 1 + R"(
 17:U 16:L 18:R 10:L 9:L 31:D 30:L 32:R 25:U 18:U 38:R 39:R 11:R 23:D 30:D 37:L
 )";
-    test(indata, {outdata1, outdata2, outdata3});
+    const char * outdata4 = 1 + R"(
+17:U 18:R 10:L 9:L 31:D 32:R 25:U 18:U 11:R 30:L 16:L 38:R 23:D 30:D 37:L 39:R
+)";
+    const char * outdata5 = 1 + R"(
+17:U 18:R 10:L 9:L 31:D 32:R 25:U 18:U 11:R 16:L 30:L 38:R 23:D 30:D 37:L 39:R
+)";
+    test(indata, {outdata1, outdata2, outdata3, outdata4, outdata5});
 }
 
 BOOST_AUTO_TEST_CASE(JuniorLevel01)
@@ -90,7 +96,10 @@ BOOST_AUTO_TEST_CASE(JuniorLevel01)
     const char * outdata3 = 1 + R"(
 17:U 10:L 9:L 23:L 25:U 18:U 11:R 22:D 29:D 31:R 32:R 33:D
 )";
-    test(indata, {outdata1, outdata2, outdata3});
+    const char * outdata4 = 1 + R"(
+17:U 10:L 9:L 25:U 18:U 11:R 23:L 22:D 29:D 31:R 32:R 33:D
+)";
+    test(indata, {outdata1, outdata2, outdata3, outdata4});
 }
 
 BOOST_AUTO_TEST_CASE(JuniorLevel06)
@@ -104,10 +113,19 @@ BOOST_AUTO_TEST_CASE(JuniorLevel06)
 ##. .##
 #######
 )";
-    const char * outdata = 1 + R"(
+    const char * outdata1 = 1 + R"(
 17:U 16:L 10:R 18:R 31:D 30:L 23:U 16:U 32:R 38:L 25:D 32:D
 )";
-    test(indata, {outdata});
+    const char * outdata2 = 1 + R"(
+23:L 16:U 25:R 18:U 30:D 22:U 32:D 26:D 17:R 18:R 31:L 30:L
+)";
+    const char * outdata3 = 1 + R"(
+17:U 16:L 10:R 31:D 30:L 23:U 18:R 16:U 32:R 38:L 25:D 32:D
+)";
+    const char * outdata4 = 1 + R"(
+23:L 16:U 25:R 18:U 22:D 17:L 16:L 32:D 26:U 30:D 31:R 32:R
+)";
+    test(indata, {outdata1, outdata2, outdata3, outdata4});
 }
 
 BOOST_AUTO_TEST_CASE(Corral01)

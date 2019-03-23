@@ -32,7 +32,6 @@ inline bool operator == (const BoxState & l, const BoxState & r) {
     return l.box_bits     == r.box_bits
         && l.player_index == r.player_index;
 }
-
 }
 
 namespace std {

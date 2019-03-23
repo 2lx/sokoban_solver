@@ -55,6 +55,8 @@ public:
     bool is_wall(const size_t index) const     { return _is_wall[index]; }
     bool is_goal(const size_t index) const     { return _is_goal[index]; }
     bool is_box (const size_t index) const     { return _is_box[index];  }
+
+    size_t boxes_on_goals() const;
 };
 }
 

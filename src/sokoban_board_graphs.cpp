@@ -166,7 +166,18 @@ void BoardGraphs::calculate_routes(const DGraph & reverse_pushes) {
     }
 }
 
-int BoardGraphs::push_distance_diff(const BoardState & state, size_t boxi, const PushInfo & pi) const {
+size_t BoardGraphs::ordered_boxes_on_goals(const BoardState & state) const {
+    size_t result = 0u;
+    for (const auto i: _goals_order) {
+        index_t goali = state.goal_index(i);
+        if (state.is_box(goali)) { result++; continue; }
+        else { break; }
+    }
+    return result;
+}
+
+pair<size_t, size_t> BoardGraphs::push_distances(const BoardState & state,
+                                                 size_t boxi, const PushInfo & pi) const {
     for (const auto i: _goals_order) {
         index_t goali = state.goal_index(i);
 
@@ -177,18 +188,14 @@ int BoardGraphs::push_distance_diff(const BoardState & state, size_t boxi, const
         if (!binary_search(begin(_boxes_goals[boxi]), end(_boxes_goals[boxi]), goali)) { continue; }
 
         // we found the goal with the highest priority for considered box
-        // let's compare the distances before and after pushing
-        const int dist_from = static_cast<int>(_goals_distances[i][pi.from()]);
-        const int dist_to   = static_cast<int>(_goals_distances[i][pi.to()]);
-        /* cout << "goal order:" << i */
-        /*      << " from:" << dist_from */
-        /*      << " to:" << dist_to */
-        /*      << " diff:" << dist_from - dist_to << endl; */
-        return dist_from - dist_to;
+        // return distances before and after the pushing
+        const size_t dist_from = _goals_distances[i][pi.from()];
+        const size_t dist_to   = _goals_distances[i][pi.to()];
+        return make_pair(dist_from, dist_to);
     }
 
     assert(true);
-    return 0;
+    return {};
 }
 
 index_t BoardGraphs::min_move_index(index_t player) const {

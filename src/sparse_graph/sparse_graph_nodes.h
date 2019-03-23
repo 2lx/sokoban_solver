@@ -59,7 +59,7 @@ class SparseGraphNodes {
         : _graph{g}, _queue{}, _distances{},
           _visited(_graph._edges.size(), false), _traversed{false} {
             if constexpr (CalcDistances) {
-                _distances.resize(_graph._edges.size(), 0u);
+                _distances.resize(_graph._edges.size(), MAXDISTANCE);
             }
     }
 
@@ -70,7 +70,7 @@ class SparseGraphNodes {
             std::fill(std::begin(_visited), std::end(_visited), false);
 
             if constexpr (CalcDistances) {
-                std::fill(std::begin(_distances), std::end(_distances), 0u);
+                std::fill(std::begin(_distances), std::end(_distances), MAXDISTANCE);
             }
 
             _traversed = false;
@@ -78,6 +78,8 @@ class SparseGraphNodes {
     }
 
 public:
+    static constexpr size_t MAXDISTANCE = std::numeric_limits<size_t>::max();
+
     auto begin(const std::vector<T> & indexes) {
         recover_state();
 

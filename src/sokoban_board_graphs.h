@@ -43,7 +43,9 @@ public:
     /* const auto & distance_to_goal_from(size_t goali, size_t ind) const { */
     /*     return _goals_distances[goali][ind]; } */
     const auto & goals_order() const { return _goals_order; }
-    int push_distance_diff(const BoardState & state, size_t boxi, const PushInfo & pi) const;
+    size_t ordered_boxes_on_goals(const BoardState & state) const;
+    std::pair<size_t, size_t> push_distances(const BoardState & state,
+                                             size_t boxi, const PushInfo & pi) const;
 
     index_t min_move_index(index_t player) const;
 

@@ -77,7 +77,7 @@ void BoardState::print_level_string(const std::string & level) const {
 void BoardState::print_distances(const vector<size_t> & distances) const {
     string level = level_as_string(false);
     for (size_t i = 0; i < distances.size(); ++i) {
-        if (distances[i] != 0) {
+        if (/*distances[i] != 0 &&*/ distances[i] < MAX_TILE_COUNT) {
             level[i] = Formatter::number_to_char(distances[i]);
         }
     }
@@ -90,5 +90,14 @@ void BoardState::print(const vector<index_t> & marked) const {
     for_each(begin(marked), end(marked), [&level](index_t ind){ level[ind] = '?'; });
 
     print_level_string(level);
+}
+
+size_t BoardState::boxes_on_goals() const {
+    size_t result = 0u;
+    for (const auto gi: _goals) {
+        if (_is_box[gi]) { result++; }
+    }
+
+    return result;
 }
 

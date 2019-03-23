@@ -45,8 +45,8 @@ void Board::set_boxstate(const BoxState & bs) {
     _graphs.narrow_moves(_state.box_indexes());
 }
 
-vector<pair<PushInfo, int>> Board::possible_pushes() {
-    vector<pair<PushInfo, int>> result;
+vector<pair<PushInfo, typename Board::StateStats>> Board::possible_pushes() {
+    vector<pair<PushInfo, StateStats>> result;
 
     // calculate all tile indexes which available for player with current boxes
     // and player positions
@@ -75,10 +75,12 @@ vector<pair<PushInfo, int>> Board::possible_pushes() {
             if (_dltester.test_for_index(ibox_dest)) { continue; }
 
             const PushInfo pi{ ibox, ibox_dest };
-            const int priority = _graphs.push_distance_diff(_state, i, pi);
+            StateStats stats{};
+            stats.boxes_on_goals_count         = _state.boxes_on_goals();
+            stats.ordered_boxes_on_goals_count = _graphs.ordered_boxes_on_goals(_state);
+            stats.push_distances       = _graphs.push_distances(_state, i, pi);
 
-            /* result.push_back({pi, 0}); */
-            result.push_back({pi, priority});
+            result.push_back({pi, stats});
         }
         _state.recover_bitset_box(ibox);
     }
@@ -102,14 +104,14 @@ void Board::print_graphs() const {
     }
 
     for (size_t i = 0; i < _state.box_count(); ++i) {
-        const index_t goali = _state.goal_indexes()[i];
+        const index_t goali = _state.goal_index(i);
 
         cout << "Distances to goal[" << i << "] at " << goali << ":\n";
         _state.print_distances(_graphs.distances_to_goal(i));
     }
 
     cout << "Goals order:\n";
-    std::vector<size_t> order_as_distance(_state.tile_count(), 0u);
+    std::vector<size_t> order_as_distance(_state.tile_count(), std::numeric_limits<size_t>::max());
     size_t counter = 1u;
     for (const auto go: _graphs.goals_order()) {
         order_as_distance[_state.goal_index(go)] = counter++;

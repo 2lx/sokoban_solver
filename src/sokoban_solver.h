@@ -19,6 +19,9 @@ private:
     TranspositionTable ttable;
     TranspositionGraph tgraph;
 
+    size_t calculate_priority(const Board::StateStats & stats) const;
+    size_t max_priority() const;
+
 public:
     Solver() = default;
 

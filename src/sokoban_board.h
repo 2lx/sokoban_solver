@@ -21,6 +21,12 @@ class Board {
     DeadlockTester _dltester;
 
 public:
+    struct StateStats {
+        size_t boxes_on_goals_count;
+        size_t ordered_boxes_on_goals_count;
+        std::pair<size_t, size_t> push_distances;
+    };
+
     Board() = default;
 
     Board(const Board &) = delete;
@@ -37,8 +43,9 @@ public:
 
     bool is_complete() const { return _state.is_complete(); }
 
-    std::vector<std::pair<PushInfo, int>> possible_pushes();
+    std::vector<std::pair<PushInfo, StateStats>> possible_pushes();
 
+    void print_state() const { _state.print(); }
     void print_graphs() const;
 };
 }
