@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE SokobanSection1Tests
 
 #include <boost/test/unit_test.hpp>
-#include "test_common.h"
+#include "test_solver_common.h"
 
 BOOST_AUTO_TEST_CASE(BasicLevel01)
 {
