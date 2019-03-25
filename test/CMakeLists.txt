@@ -15,10 +15,14 @@ target_link_libraries(SS1Test SSTestLib SokobanSolverLib ${Boost_UNIT_TEST_FRAME
 add_executable(SPQueueTest test_stable_priority_queue.cpp)
 target_link_libraries(SPQueueTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
 
+add_executable(ZobristHashTest test_zobrist_hash.cpp)
+target_link_libraries(ZobristHashTest ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+
 add_test(NAME SS1Test COMMAND SS1Test)
 add_test(NAME SPQueueTest COMMAND SPQueueTest)
+add_test(NAME ZobristHashTest COMMAND ZobristHashTest)
 
-set_target_properties(SS1Test SPQueueTest
+set_target_properties(SS1Test SPQueueTest ZobristHashTest
     PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/test")
 
