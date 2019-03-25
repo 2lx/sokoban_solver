@@ -3,7 +3,7 @@
 
 #include "sokoban_pushinfo.h"
 #include "string_join.h"
-#include "priority_queue.h"
+#include "stable_priority_queue.h"
 
 #include <iterator>
 #include <iostream>
@@ -80,7 +80,7 @@ bool Solver::solve() {
     assert(board.box_count() <= MAX_BOX_COUNT);
     BoxState::set_box_count(board.box_count());
 
-    PriorityQueue<pair<stateid_t, BoxState>> q(max_priority() + 1);
+    StablePriorityQueue<pair<stateid_t, BoxState>> q(max_priority() + 1);
     _base_state = board.current_state();
     auto [inserted, base_state_id] = _trans_table.insert_state(_base_state);
     q.push(0u, {base_state_id, _base_state});

@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE WayOut1Section1Tests
+#define BOOST_TEST_MODULE SokobanSection1Tests
 
 #include <boost/test/unit_test.hpp>
 #include "test_common.h"
