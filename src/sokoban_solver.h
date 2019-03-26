@@ -15,7 +15,7 @@ private:
     Solver & operator=(const Solver &) = delete;
     Solver & operator=(Solver &&) = delete;
 
-    Board board;
+    Board _board;
     TranspositionTable _trans_table;
     TranspositionGraph _trans_graph;
     BoxState _base_state;
@@ -27,6 +27,7 @@ public:
     Solver() = default;
 
     bool read_level_data(std::istream & stream);
+    void print_information() const;
     bool solve();
     void print_solution_format1(std::ostream & stream);
     void print_solution_format2(std::ostream & stream);

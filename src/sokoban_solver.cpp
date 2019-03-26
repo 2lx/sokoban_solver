@@ -30,11 +30,15 @@ bool Solver::read_level_data(std::istream & stream) {
         height++;
     }
 
-    return board.initialize(move(maze), width, height);
+    return _board.initialize(move(maze), width, height);
+}
+
+void Solver::print_information() const {
+    _board.print_information();
 }
 
 void Solver::print_solution_format1(std::ostream & stream) {
-    // board.print_graphs();
+    // _board.print_graphs();
     /* _trans_graph.print(cout); */
     /* _trans_table.print(); */
 
@@ -49,21 +53,21 @@ void Solver::print_solution_format2(std::ostream & stream) {
     cout << "Solution (" << _trans_table.size() << " states):" << endl;
     auto path = _trans_graph.get_path();
     if (path.has_value()) {
-        board.set_boxstate(_base_state);
-        board.print_state();
+        _board.set_boxstate(_base_state);
+        _board.print_state();
 
         for (size_t i = 0; i < path.value().size(); ++i) {
             const PushInfo & pi = path.value()[i];
-            board.set_boxstate_and_push(board.current_state(), pi);
+            _board.set_boxstate_and_push(_board.current_state(), pi);
 
             stream << pi << '\n';
-            board.print_state();
+            _board.print_state();
         }
     }
 }
 
 size_t Solver::max_priority() const {
-    return board.box_count() + 4;
+    return _board.box_count() + 4;
 }
 
 size_t Solver::calculate_priority(const Board::StateStats & stats) const {
@@ -77,11 +81,12 @@ size_t Solver::calculate_priority(const Board::StateStats & stats) const {
 }
 
 bool Solver::solve() {
-    assert(board.box_count() <= MAX_BOX_COUNT);
-    BoxState::set_box_count(board.box_count());
+    assert(_board.box_count() <= MAX_BOX_COUNT);
+    BoxState::set_box_count(_board.box_count());
+    if (_board.is_complete()) { return true; }
 
     StablePriorityQueue<pair<stateid_t, BoxState>> q(max_priority() + 1);
-    _base_state = board.current_state();
+    _base_state = _board.current_state();
     auto [inserted, base_state_id] = _trans_table.insert_state(_base_state);
     q.push(0u, {base_state_id, _base_state});
 
@@ -89,13 +94,13 @@ bool Solver::solve() {
         auto [state_id, state] = q.front();
         q.pop();
 
-        board.set_boxstate(state);
-        auto pushes = board.possible_pushes();
+        _board.set_boxstate(state);
+        auto pushes = _board.possible_pushes();
 
         for (const auto [pushinfo, stats]: pushes) {
-            board.set_boxstate_and_push(state, pushinfo);
+            _board.set_boxstate_and_push(state, pushinfo);
 
-            auto new_state = board.current_state();
+            auto new_state = _board.current_state();
             auto [inserted, new_state_id] = _trans_table.insert_state(new_state);
 
             if (inserted) {
@@ -109,11 +114,11 @@ bool Solver::solve() {
                 /*      << " push_dist=" << stats.push_distances.first */
                 /*                       << ' ' << stats.push_distances.second */
                 /*      << endl; */
-                /* board.print_state(); */
+                /* _board.print_state(); */
 
                 size_t priority = calculate_priority(stats);
                 q.push(priority, {new_state_id, new_state});
-                if (board.is_complete()) { return true; }
+                if (_board.is_complete()) { return true; }
             };
         }
     }

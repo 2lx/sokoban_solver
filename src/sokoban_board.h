@@ -35,6 +35,8 @@ public:
     Board & operator=(Board &&) = delete;
 
     bool initialize(std::vector<Tile> && maze, size_t w, size_t h);
+    void print_information() const;
+
     size_t box_count() const { return _state.box_count(); }
 
     BoxState current_state() const;

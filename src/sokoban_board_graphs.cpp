@@ -54,7 +54,7 @@ bool BoardGraphs::initialize(const BoardState & state) {
     /* cout << "REVERSE PUSHES:\n" << endl; */
     /* auto nodes = reverse_pushes.nodes(); */
     /* vector<index_t> pushes; */
-    /* for_each (nodes.begin(state.goal_index(5)), nodes.end(), */
+    /* for_each (nodes.begin(state.goal_index(0)), nodes.end(), */
     /*         [&pushes](auto ind){ pushes.push_back(ind); }); */
     /* cout << string_join(pushes, ", ") << endl; */
     /* state.print(pushes); */
@@ -130,20 +130,34 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
 
             // for each remaining goal, check if there are any boxes,
             // that have become unpassable for it (after removing the node)
-            for (const auto [ttt, chgi]: unordered_goals) {
+            for (const auto [ignored, chgi]: unordered_goals) {
                 if (chgi == goali) { continue; }
 
                 const auto passbits = trpushes.check_if_passable(chgi, state.box_indexes());
-                /* cout << string_join(passbits, "") << endl; */
+                /* cout << "goali:" << goali << " " */
+                /*      << "chgi:" << chgi << " " */
+                /*      << string_join(state.box_indexes()) << " " */
+                /*      << string_join(passbits, "") << endl; */
 
                 for (size_t i = 0; i < _box_count; ++i) {
                     if (binary_search(begin(_boxes_goals[i]), end(_boxes_goals[i]), chgi)) {
-                        if (!passbits[i]) { all_passable = false; }
+                        // if the box is already in the goali room, it's passable
+                        if ((!passbits[i]) && state.box_index(i) != goali) {
+                            // if box is in the room with ordered goal, it's passable
+                            if (find_if(begin(_goals_order), end(_goals_order),
+                                     [&state, i=i](size_t ind){
+                                        return state.goal_index(ind) == state.box_index(i);
+                                     }) == end(_goals_order)) {
+                                /* cout << goali << " " << state.box_index(i) << endl; */
+                                all_passable = false;
+                            }
+                        }
                     }
                 }
             }
 
             if (all_passable) {
+                /* cout << "FOUND! " << goali<< endl; */
                 _goals_order.push_back(gi);
                 unordered_goals.erase(remove(begin(unordered_goals), end(unordered_goals),
                                              make_pair(gi, goali)),

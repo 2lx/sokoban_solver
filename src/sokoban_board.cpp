@@ -14,15 +14,17 @@ bool Board::initialize(std::vector<Tile> && maze, size_t width, size_t height) {
     assert(maze.size() <= MAX_TILE_COUNT);
 
     if (!_state.initialize(move(maze), width, height)) return false;
+    if (_state.is_complete()) { return true; }
     if (!_graphs.initialize(_state))   return false;
     if (!_dltester.initialize(_state)) return false;
 
-    // print states
+    return true;
+}
+
+void Board::print_information() const {
     cout << "LEVEL: " << endl;
     _state.print();
     print_graphs();
-
-    return true;
 }
 
 BoxState Board::current_state() const {

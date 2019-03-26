@@ -9,6 +9,7 @@ int main() {
         cout << "Invalid input data" << endl;
         return EXIT_FAILURE;
     }
+    solver.print_information();
 
     if (solver.solve()) {
         solver.print_solution_format1(cout);
