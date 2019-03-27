@@ -1,7 +1,7 @@
-file(GLOB WOS_SRC "*.cpp")
-list(REMOVE_ITEM WOS_SRC "main.cpp")
+file(GLOB SRC "*.cpp")
+list(REMOVE_ITEM SRC "main.cpp")
 
-add_library(SokobanSolverLib ${WOS_SRC})
+add_library(SokobanSolverLib ${SRC})
 target_include_directories(SokobanSolverLib PUBLIC common sparse_graph)
 add_executable(SokobanSolver main.cpp)
 target_link_libraries(SokobanSolver SokobanSolverLib)
