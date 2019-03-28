@@ -106,16 +106,6 @@ bool Solver::solve() {
             if (inserted) {
                 _trans_graph.insert_state(state_id, new_state_id, pushinfo);
 
-                /* cout << endl; */
-                /* cout << "priority: " << priority << endl; */
-                /* cout << "push: " << pushinfo.from() << ' ' << pushinfo.to() */
-                /*      << " bos=" << stats.boxes_on_goals_count */
-                /*      << " obos=" << stats.ordered_boxes_on_goals_count */
-                /*      << " push_dist=" << stats.push_distances.first */
-                /*                       << ' ' << stats.push_distances.second */
-                /*      << endl; */
-                /* _board.print_state(); */
-
                 size_t priority = calculate_priority(stats);
                 q.push(priority, {new_state_id, new_state});
                 if (_board.is_complete()) { return true; }

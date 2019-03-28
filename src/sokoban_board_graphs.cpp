@@ -72,7 +72,7 @@ void BoardGraphs::bipartite_matching(const BoardState & state, const DGraph & re
     // collect all achievable goals for each box
     _boxes_goals.resize(_box_count, {});
     for (const auto goali: state.goal_indexes()) {
-        const auto passable_boxes = reverse_pushes.check_if_passable(goali, state.box_indexes());
+        const auto passable_boxes = reverse_pushes.test_passability(goali, state.box_indexes());
 
         for (size_t i = 0; i < passable_boxes.size(); ++i) {
             if (passable_boxes[i]) {
@@ -133,7 +133,7 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
             for (const auto [ignored, chgi]: unordered_goals) {
                 if (chgi == goali) { continue; }
 
-                const auto passbits = trpushes.check_if_passable(chgi, state.box_indexes());
+                const auto passbits = trpushes.test_passability(chgi, state.box_indexes());
                 /* cout << "goali:" << goali << " " */
                 /*      << "chgi:" << chgi << " " */
                 /*      << string_join(state.box_indexes()) << " " */
@@ -143,7 +143,7 @@ void BoardGraphs::calculate_goals_order(const BoardState & state,
                     if (binary_search(begin(_boxes_goals[i]), end(_boxes_goals[i]), chgi)) {
                         // if the box is already in the goali room, it's passable
                         if ((!passbits[i]) && state.box_index(i) != goali) {
-                            // if box is in the room with ordered goal, it's passable
+                            // if the box is in the room with ordered goal, it's passable
                             if (find_if(begin(_goals_order), end(_goals_order),
                                      [&state, i=i](size_t ind){
                                         return state.goal_index(ind) == state.box_index(i);

@@ -1,9 +1,10 @@
-#ifndef DEADLOCK_2x2_H
-#define DEADLOCK_2x2_H
+#ifndef DEADLOCKS_H
+#define DEADLOCKS_H
 
 #include <vector>
 #include "deadlock_info.h"
 
+extern std::vector<Sokoban::DeadlockInfo> deadlocks1x2;
 extern std::vector<Sokoban::DeadlockInfo> deadlocks2x2;
 
 #endif

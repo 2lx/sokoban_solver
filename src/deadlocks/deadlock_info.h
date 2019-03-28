@@ -32,6 +32,7 @@ inline Point offset(size_t goali, size_t roomi, size_t width) {
 
 struct DeadlockInfo {
     std::vector<Point> walls;
+    std::vector<Point> spaces;
     std::vector<Point> boxes;
     std::vector<Point> goals;
     bool independent_of_goals;
@@ -43,9 +44,6 @@ inline bool operator==(const DeadlockInfo & l, const DeadlockInfo & r) {
 
 std::ostream & operator<<(std::ostream & stream, const Sokoban::Point & c);
 std::ostream & operator<<(std::ostream & stream, const Sokoban::DeadlockInfo & dli);
-
-/* using ::operator<<; */
 }
-
 
 #endif

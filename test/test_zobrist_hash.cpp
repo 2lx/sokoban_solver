@@ -10,7 +10,7 @@ using namespace std;
 using ull_t = unsigned long long;
 constexpr size_t BIT_COUNT = std::numeric_limits<ull_t>::digits;
 
-bool check_different(size_t ind1, size_t ind2, size_t octet, ull_t hash1, ull_t hash2) {
+bool test_collision(size_t ind1, size_t ind2, size_t octet, ull_t hash1, ull_t hash2) {
     const ull_t mask = static_cast<ull_t>(0xFF) << (octet * 8);
 
     if ((hash1 & mask) == (hash2 & mask)) {
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(Test01)
             ull_t hash2 = zhash.random_bits(j);
 
             for (size_t k = 0; k < BIT_COUNT / 8; k++) {
-                if (check_different(i, j, k, hash1, hash2)) { collision_count++; }
+                if (test_collision(i, j, k, hash1, hash2)) { collision_count++; }
             }
         }
     }

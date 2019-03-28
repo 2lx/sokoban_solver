@@ -78,7 +78,7 @@ vector<pair<PushInfo, typename Board::StateStats>> Board::possible_pushes() {
 
             const PushInfo pi{ ibox, ibox_dest };
             StateStats stats{};
-            stats.boxes_on_goals_count         = _state.boxes_on_goals();
+            /* stats.boxes_on_goals_count         = _state.boxes_on_goals(); */
             stats.ordered_boxes_on_goals_count = _graphs.ordered_boxes_on_goals(_state);
             stats.push_distances       = _graphs.push_distances(_state, i, pi);
 

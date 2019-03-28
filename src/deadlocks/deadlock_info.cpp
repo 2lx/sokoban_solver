@@ -29,18 +29,19 @@ ostream & operator<<(ostream & stream, const DeadlockInfo & dli) {
             str[index] = ch;
     };
 
-    const auto & [ws, bs, gs, flag] = dli;
+    const auto & [ws, ss, bs, gs, flag] = dli;
     string comment{ comment_pattern };
 
     // format the comment
     for (auto p: ws) { format(comment, p, '#'); }
     for (auto p: bs) { format(comment, p, '$'); }
-    for (auto p: gs) { format(comment, p, '.'); }
-    if (flag) { comment += "   goal independent"; }
+    if (!flag) { for (auto p: gs) { format(comment, p, '.'); } }
+    /* if (flag) { comment += "   goal independent"; } */
 
     return stream << comment
                   << "\n  { "
                   << "{ " << string_join(ws, ", ") << " }, "
+                  << "{ " << string_join(ss, ", ") << " }, "
                   << "{ " << string_join(bs, ", ") << " }, "
                   << "{ " << string_join(gs, ", ") << " }, "
                   << (flag ? 1 : 0)

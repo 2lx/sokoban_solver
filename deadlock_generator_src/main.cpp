@@ -6,25 +6,25 @@
 using namespace Sokoban;
 using namespace std;
 
-    constexpr const char * level_pattern = 1 + R"(
+constexpr const char * level_pattern = 1 + R"(
 ########
-#1     #
-#      #
+#1111  #
+# 22   #
 #  ??  #
 #  ?$  #
-# 2    #
+# 22   #
 #     @#
 ########
 )";
 
-    constexpr const char * file_header = 1 + R"(
+constexpr const char * file_header = 1 + R"(
 #include "deadlocks.h"
 
 std::vector<Sokoban::DeadlockInfo> deadlocks2x2 =
 {
 )";
 
-    constexpr const char * file_footer = 1 + R"(
+constexpr const char * file_footer = 1 + R"(
 };
 )";
 

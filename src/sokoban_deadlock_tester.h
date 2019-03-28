@@ -13,6 +13,11 @@ class DeadlockTester {
     std::vector<std::vector<std::function<bool()>>> _checks;
     size_t _width, _height;
 
+    bool test_landscape(const BoardState & state,
+            const std::vector<index_t> & walls,
+            const std::vector<index_t> & spaces,
+            const std::vector<index_t> & goals) const;
+
 public:
     DeadlockTester() = default;
 

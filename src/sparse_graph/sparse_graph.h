@@ -138,7 +138,7 @@ public:
     };
 
     // returns signal flags, indicated which of the nodes are available from the start node
-    std::vector<bool> check_if_passable(const T start, const std::vector<T> & nodes) const {
+    std::vector<bool> test_passability(const T start, const std::vector<T> & nodes) const {
         auto grnodes = this->nodes();
         std::for_each(grnodes.begin(start), grnodes.end(), [](auto){}); // just iterate
 
