@@ -34,7 +34,7 @@ struct DeadlockInfo {
     std::vector<Point> walls;
     std::vector<Point> spaces;
     std::vector<Point> boxes;
-    std::vector<Point> goals;
+    std::vector<std::vector<Point>> goalsets; // solvable combinations
     bool independent_of_goals;
 };
 

@@ -2,21 +2,24 @@
 #define SOKOBAN_DEADLOCK_TESTER_H
 
 #include "sokoban_common.h"
+
 #include <vector>
 #include <functional>
 
 namespace Sokoban
 {
 class BoardState;
+class DeadlockInfo;
 
 class DeadlockTester {
     std::vector<std::vector<std::function<bool()>>> _checks;
     size_t _width, _height;
 
-    bool test_landscape(const BoardState & state,
-            const std::vector<index_t> & walls,
-            const std::vector<index_t> & spaces,
-            const std::vector<index_t> & goals) const;
+    std::optional<index_t> symmetric_index(size_t ind,
+                        const std::pair<int, int> & diff,
+                        const std::pair<bool, bool> & refl) const;
+    bool test_landscape(const BoardState & state, const DeadlockInfo & dlinfo,
+                        const std::pair<bool, bool> & refl, index_t ind) const;
 
 public:
     DeadlockTester() = default;

@@ -166,10 +166,13 @@ void DeadlockGenerator::insert_deadlock(const Combination & ci, bool not_depends
     transform(begin(ci.boxes), end(ci.boxes), back_inserter(dli.boxes),  getc);
 
     if (not_depends_on_goals) {
+        dli.goalsets.push_back({});
         transform(begin(_goal_all_indexes), end(_goal_all_indexes),
-                  back_inserter(dli.goals), getc);
+                  back_inserter(dli.goalsets.front()), getc);
     } else {
-        transform(begin(ci.goals), end(ci.goals), back_inserter(dli.goals), getc);
+        dli.goalsets.push_back({});
+        transform(begin(ci.goals), end(ci.goals),
+                  back_inserter(dli.goalsets.front()), getc);
     }
     dli.independent_of_goals = not_depends_on_goals;
 

@@ -18,7 +18,7 @@ constexpr const char * level_pattern = 1 + R"(
 )";
 
 constexpr const char * file_header = 1 + R"(
-#include "deadlocks.h"
+#include "deadlock_info.h"
 
 std::vector<Sokoban::DeadlockInfo> deadlocks2x2 =
 {

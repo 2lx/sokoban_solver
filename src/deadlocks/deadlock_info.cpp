@@ -9,11 +9,10 @@ using namespace std;
 namespace Sokoban
 {
 ostream & operator<<(ostream & stream, const Point & c) {
-    return stream << "{"
+    return stream << "{ "
                   << setw(2) << c.x
                   << ", "
-                  << setw(2) << c.y
-                  << "}";
+                  << setw(2) << c.y << " }";
 }
 
 ostream & operator<<(ostream & stream, const DeadlockInfo & dli) {
@@ -35,16 +34,23 @@ ostream & operator<<(ostream & stream, const DeadlockInfo & dli) {
     // format the comment
     for (auto p: ws) { format(comment, p, '#'); }
     for (auto p: bs) { format(comment, p, '$'); }
-    if (!flag) { for (auto p: gs) { format(comment, p, '.'); } }
+    /* if (!flag) { for (auto p: gs) { format(comment, p, '.'); } } */
     /* if (flag) { comment += "   goal independent"; } */
 
-    return stream << comment
-                  << "\n  { "
-                  << "{ " << string_join(ws, ", ") << " }, "
-                  << "{ " << string_join(ss, ", ") << " }, "
-                  << "{ " << string_join(bs, ", ") << " }, "
-                  << "{ " << string_join(gs, ", ") << " }, "
-                  << (flag ? 1 : 0)
-                  << " }";
+    stream << comment
+           << "\n  {\n"
+           << "    { " << string_join(ws, ", ") << " },\n"
+           << "    { " << string_join(ss, ", ") << " },\n"
+           << "    { " << string_join(bs, ", ") << " },\n";
+
+    stream << "    {\n";
+    for (const auto & gsone: gs) {
+        stream << "      { " << string_join(gsone, ", ") << " }\n";
+    }
+    stream << "    }\n"
+           << "    " << (flag ? 1 : 0) << '\n'
+           << "  }";
+
+    return stream;
 }
 }
